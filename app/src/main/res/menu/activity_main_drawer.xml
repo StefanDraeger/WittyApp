@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item android:title="@string/connection">
+        <menu>
+            <item
+                android:id="@+id/nav_connect"
+                android:icon="@drawable/ic_phonelink_black_24dp"
+                android:title="@string/connect" />
+            <item
+                android:id="@+id/nav_disconnect"
+                android:icon="@drawable/ic_phonelink_off_black_24dp"
+                android:title="@string/disconnect"
+                android:enabled="false"/>
+        </menu>
+    </item>
+   
+  <item android:title="@string/examples">
+        <menu>
+            <item
+                android:id="@+id/nav_ldr_photoresitor"
+                android:icon="@drawable/ic_menu_send"
+                android:title="@string/photoresistor" />
+            <item
+                android:id="@+id/nav_rgb_led"
+                android:icon="@drawable/ic_menu_send"
+                android:title="@string/rgb_led" />
+        </menu>
+    </item>
+
+    <item android:title="@string/others">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings_black_24dp"
+                android:title="@string/settings" />
+
+            <item
+                android:id="@+id/nav_impressum"
+                android:icon="@drawable/ic_help_black_24dp"
+                android:title="@string/impressum" />
+            <item
+                android:id="@+id/nav_privacy_policy"
+                android:icon="@drawable/ic_card_membership_black_24dp"
+                android:title="@string/privacy_policy" />
+        </menu>
+    </item>
+
+</menu>
