@@ -3,7 +3,7 @@ package wittyapp.draegerit.de.wittyapp.util;
 import wittyapp.draegerit.de.wittyapp.R;
 
 public enum EActiveView {
-    PHOTORESISTOR(0, R.layout.activity_photoresistor),RGB_LED(1, R.layout.activity_rgb_led);
+    HOME(0,R.layout.activity_home),PHOTORESISTOR(0, R.layout.activity_photoresistor),RGB_LED(1, R.layout.activity_rgb_led);
 
     int position;
     int layoutResId;

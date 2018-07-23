@@ -5,19 +5,30 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
+
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import wittyapp.draegerit.de.wittyapp.util.EActiveView;
 
@@ -28,6 +39,8 @@ public class MainActivity extends AppCompatActivity
     private static final int ZERO = 0;
     private ViewSwitcher viewSwitcher;
     private NavigationView navigationView;
+
+    private EActiveView activeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,12 +75,48 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_SENDTO);
                 intent.setData(Uri.parse("mailto:"));
-                intent.putExtra(Intent.EXTRA_EMAIL  , new String[] { getString(R.string.email) });
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[]{getString(R.string.email)});
                 intent.putExtra(Intent.EXTRA_SUBJECT, EMPTY);
 
                 startActivity(Intent.createChooser(intent, getString(R.string.app_name)));
             }
         });
+
+        TextView versionTextView = navigationView.getHeaderView(ZERO).findViewById(R.id.versionTextView);
+        versionTextView.setText(getString(R.string.version_text, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
+
+        activeView = EActiveView.HOME;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        MenuItem clearMItem = menu.findItem(R.id.action_clear);
+        MenuItem downloadMItem = menu.findItem(R.id.action_download);
+        MenuItem timerMItem = menu.findItem(R.id.action_timer);
+
+        if (activeView.equals(EActiveView.PHOTORESISTOR)) {
+            clearMItem.setVisible(true);
+            downloadMItem.setVisible(true);
+            timerMItem.setVisible(true);
+        } else {
+            clearMItem.setVisible(false);
+            downloadMItem.setVisible(false);
+            timerMItem.setVisible(false);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_clear) {
+            //return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -80,34 +129,14 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
         switch (id) {
+            case R.id.nav_home:
+                loadView(EActiveView.HOME);
+                break;
             case R.id.nav_connect:
                 connectToDevice();
                 break;
@@ -126,7 +155,7 @@ public class MainActivity extends AppCompatActivity
                 break;
 
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -151,14 +180,81 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void loadView(EActiveView activeView) {
-        if (!activeView.equals(EActiveView.PHOTORESISTOR)) {
+        viewSwitcher.setInAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left));
+        viewSwitcher.setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right));
+
+        this.activeView = activeView;
+
+        if (!activeView.equals(EActiveView.HOME)) {
             switchLayout(activeView.getLayoutResId());
         } else {
             viewSwitcher.setDisplayedChild(activeView.getPosition());
         }
 
+        switch (activeView) {
+            case HOME:
+                break;
+            case PHOTORESISTOR:
+                loadPhotoresistorView();
+                break;
+            case RGB_LED:
+                break;
+        }
+
+        invalidateOptionsMenu();
+    }
+
+    private void loadPhotoresistorView() {
+        final LineChart lineChart = findViewById(R.id.chart);
+        // creating list of entry<br />
+        final ArrayList<Entry> entries = new ArrayList<>();
+
+        final LineDataSet dataset = new LineDataSet(entries, "#Test");
+        dataset.setDrawCubic(true);
+        dataset.setDrawFilled(true);
+
+        ArrayList<String> labels = new ArrayList<>();
+        labels.add("January");
+        labels.add("February");
+        labels.add("March");
+        labels.add("April");
+        labels.add("May");
+        labels.add("June");
+
+        final LineData data = new LineData(labels, dataset);
+        lineChart.setData(data);
+        lineChart.setDescription("Description");
+
+        Button photoresistorBtnAdd = findViewById(R.id.photoresistorBtnAdd);
+        photoresistorBtnAdd.setOnClickListener(new View.OnClickListener() {
+
+            int counter = 0;
+
+            @Override
+            public void onClick(View view) {
+                int i = ThreadLocalRandom.current().nextInt(0, 10 + 1);
+                Entry entry = new Entry(i, ++counter);
+                dataset.addEntry(entry);
+                data.clearValues();
+                data.addDataSet(dataset);
+                LineData data = new LineData(getLabels(counter), dataset);
+                lineChart.setDescription("Description");
+                lineChart.setData(data);
+                lineChart.animateY(500);
+            }
+
+            private List<String> getLabels(int counter) {
+                List<String> labels = new ArrayList<>();
+                for (int i = 0; i < counter; i++) {
+                    labels.add(String.valueOf(i));
+                }
+                return labels;
+            }
+        });
+
 
     }
+
 
     private void switchLayout(int layoutResId) {
         View old = viewSwitcher.getChildAt(1);
