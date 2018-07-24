@@ -27,4 +27,19 @@
     <string name="download">Download</string>
     <string name="console">Console</string>
     <string name="timer">Timer</string>
+    <string name="photoresistorchart_desc">Desc</string>
+    <string name="max_value">max. Value</string>
+    <string name="min_value">min. Value</string>
+    <string name="average_value">average Value</string>
+    <string name="set_updateInterval">Set update interval</string>
+    <string name="ok">OK</string>
+    <string name="abort">Cancel</string>
+    <string name="_5sec">5 sec.</string>
+    <string name="_10sec">10 sec.</string>
+    <string name="_1sec">1 sec.</string>
+    <string name="_15sec">15 sec.</string>
+    <string name="photoresistor_title">Photoresistor</string>
+    <string name="ipaddress">IP Address</string>
+    <string name="ipaddress_match_fail">IP Address incorrect (IPv4)</string>
+    <string name="connectToDevice">Connect to device</string>
 </resources>

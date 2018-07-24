@@ -1,6 +1,7 @@
 package wittyapp.draegerit.de.wittyapp;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,37 +11,38 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
+import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
+import wittyapp.draegerit.de.wittyapp.util.AbstractView;
 import wittyapp.draegerit.de.wittyapp.util.EActiveView;
+import wittyapp.draegerit.de.wittyapp.util.IPAddressValidator;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String EMPTY = "";
     private static final int ZERO = 0;
+
     private ViewSwitcher viewSwitcher;
     private NavigationView navigationView;
 
-    private EActiveView activeView;
+    private AbstractView activeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +87,7 @@ public class MainActivity extends AppCompatActivity
         TextView versionTextView = navigationView.getHeaderView(ZERO).findViewById(R.id.versionTextView);
         versionTextView.setText(getString(R.string.version_text, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
 
-        activeView = EActiveView.HOME;
+        activeView = new HomeView(getApplicationContext(), viewSwitcher);
     }
 
     @Override
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity
         MenuItem downloadMItem = menu.findItem(R.id.action_download);
         MenuItem timerMItem = menu.findItem(R.id.action_timer);
 
-        if (activeView.equals(EActiveView.PHOTORESISTOR)) {
+        if (activeView.getActiveView().equals(EActiveView.PHOTORESISTOR)) {
             clearMItem.setVisible(true);
             downloadMItem.setVisible(true);
             timerMItem.setVisible(true);
@@ -112,11 +114,88 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_clear) {
-            //return true;
+        switch (id) {
+            case R.id.action_clear:
+                activeView.clearData();
+                break;
+            case R.id.action_timer:
+                showUpdateIntervalDialog();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showUpdateIntervalDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.update_interval_dialog, null);
+        dialogBuilder.setTitle(getString(R.string.set_updateInterval));
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.setIcon(R.drawable.ic_timer_blue_24dp);
+        final RadioGroup updateIntervalRadioGroup = dialogView.findViewById(R.id.updateIntervalRadioGroup);
+
+        RadioButton rBtn = null;
+        switch (activeView.getUpdateInterval()) {
+            default:
+            case 1000:
+                rBtn = dialogView.findViewById(R.id.oneSecRBtn);
+                break;
+            case 5000:
+                rBtn = dialogView.findViewById(R.id.fiveSecRBtn);
+                break;
+            case 10000:
+                rBtn = dialogView.findViewById(R.id.tenSecRBtn);
+                break;
+            case 15000:
+                rBtn = dialogView.findViewById(R.id.fiveteenSecRBtn);
+                break;
+        }
+        if (rBtn != null) {
+            rBtn.setChecked(true);
+        }
+
+
+        final AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+
+        Button okBtn = dialogView.findViewById(R.id.okBtn);
+        okBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int updateInterval = 0;
+
+                int checkedRadioButtonId = updateIntervalRadioGroup.getCheckedRadioButtonId();
+                switch (checkedRadioButtonId) {
+                    case R.id.oneSecRBtn:
+                        updateInterval = 1;
+                        break;
+                    case R.id.fiveSecRBtn:
+                        updateInterval = 5;
+                        break;
+                    case R.id.tenSecRBtn:
+                        updateInterval = 10;
+                        break;
+                    case R.id.fiveteenSecRBtn:
+                        updateInterval = 15;
+                        break;
+                    default:
+                        Log.d("WittyApp", "ID not found!");
+                        break;
+                }
+
+                activeView.setUpdateInterval(updateInterval * 1000);
+                alertDialog.dismiss();
+            }
+        });
+
+        Button abortBtn = dialogView.findViewById(R.id.abortBtn);
+        abortBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+            }
+        });
     }
 
     @Override
@@ -166,8 +245,54 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void connectToDevice() {
+        getIpAdressFromDialog();
+
+
         boolean connectionSuccessfull = true;
         toggleConnectionState(connectionSuccessfull);
+    }
+
+    private void getIpAdressFromDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setTitle(getString(R.string.connectToDevice));
+        dialogBuilder.setIcon(R.drawable.ic_phonelink_blue_24dp);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.ipaddress_dialog, null);
+        dialogBuilder.setView(dialogView);
+
+        final AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+
+        Button okBtn = dialogView.findViewById(R.id.okBtn);
+        okBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                EditText ipAdressEditText = dialogView.findViewById(R.id.ipAddressEditText);
+                String ipAdress = ipAdressEditText.getText().toString();
+                if (new IPAddressValidator().validate(ipAdress)) {
+                    boolean successfull = tryToConnect(ipAdress);
+                    if (successfull) {
+                        alertDialog.dismiss();
+                    }
+                } else {
+                    TextView ipAddressValidateTextView = dialogView.findViewById(R.id.ipAddressValidateTextView);
+                    ipAddressValidateTextView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        Button abortBtn = dialogView.findViewById(R.id.abortBtn);
+        abortBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+            }
+        });
+    }
+
+    private boolean tryToConnect(String ipAdress) {
+        return true;
     }
 
     private void toggleConnectionState(boolean connectionSuccessfull) {
@@ -182,8 +307,6 @@ public class MainActivity extends AppCompatActivity
     private void loadView(EActiveView activeView) {
         viewSwitcher.setInAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left));
         viewSwitcher.setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right));
-
-        this.activeView = activeView;
 
         if (!activeView.equals(EActiveView.HOME)) {
             switchLayout(activeView.getLayoutResId());
@@ -205,54 +328,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void loadPhotoresistorView() {
-        final LineChart lineChart = findViewById(R.id.chart);
-        // creating list of entry<br />
-        final ArrayList<Entry> entries = new ArrayList<>();
-
-        final LineDataSet dataset = new LineDataSet(entries, "#Test");
-        dataset.setDrawCubic(true);
-        dataset.setDrawFilled(true);
-
-        ArrayList<String> labels = new ArrayList<>();
-        labels.add("January");
-        labels.add("February");
-        labels.add("March");
-        labels.add("April");
-        labels.add("May");
-        labels.add("June");
-
-        final LineData data = new LineData(labels, dataset);
-        lineChart.setData(data);
-        lineChart.setDescription("Description");
-
-        Button photoresistorBtnAdd = findViewById(R.id.photoresistorBtnAdd);
-        photoresistorBtnAdd.setOnClickListener(new View.OnClickListener() {
-
-            int counter = 0;
-
-            @Override
-            public void onClick(View view) {
-                int i = ThreadLocalRandom.current().nextInt(0, 10 + 1);
-                Entry entry = new Entry(i, ++counter);
-                dataset.addEntry(entry);
-                data.clearValues();
-                data.addDataSet(dataset);
-                LineData data = new LineData(getLabels(counter), dataset);
-                lineChart.setDescription("Description");
-                lineChart.setData(data);
-                lineChart.animateY(500);
-            }
-
-            private List<String> getLabels(int counter) {
-                List<String> labels = new ArrayList<>();
-                for (int i = 0; i < counter; i++) {
-                    labels.add(String.valueOf(i));
-                }
-                return labels;
-            }
-        });
-
-
+        activeView = new PhotoresistorView(getApplicationContext(), viewSwitcher);
     }
 
 
