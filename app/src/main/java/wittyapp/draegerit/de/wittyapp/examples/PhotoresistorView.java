@@ -1,7 +1,6 @@
 package wittyapp.draegerit.de.wittyapp.examples;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -13,11 +12,9 @@ import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 import java.util.concurrent.ThreadLocalRandom;
 
 import wittyapp.draegerit.de.wittyapp.R;
-import wittyapp.draegerit.de.wittyapp.examples.timertasks.PhotoresistorTimerTask;
 import wittyapp.draegerit.de.wittyapp.util.AbstractView;
 import wittyapp.draegerit.de.wittyapp.util.EActiveView;
 
@@ -34,6 +31,8 @@ public class PhotoresistorView extends AbstractView {
     private LineDataSet dataset;
     private LineData data;
 
+    private static int counter = 0;
+
     public PhotoresistorView(Context ctx, View view) {
         super(ctx, view, EActiveView.PHOTORESISTOR);
     }
@@ -46,20 +45,25 @@ public class PhotoresistorView extends AbstractView {
         updateLineChart(labels);
     }
 
-    @Override
-    public void updateTimer() {
-        Timer timer = getTimer();
-        timer.cancel();
-        timer.purge();
-        initTimer();
-    }
+    public void addChartEntry(int value) {
+        Entry entry = new Entry(value, ++counter);
+        dataset.addEntry(entry);
+        data.clearValues();
+        data.addDataSet(dataset);
+        updateLineChart(getLabels(counter));
 
-    @Override
-    public void initTimer() {
-        Timer timer = new Timer();
-        timer.schedule(new PhotoresistorTimerTask(), 0, getUpdateInterval());
-        Log.d("WittyApp", "----------->" + String.valueOf(getUpdateInterval()));
-        setTimer(timer);
+        maxValue = Math.max(value, maxValue);
+        minValue = Math.min(value, minValue);
+        averageValue = calcAverageValue();
+
+        TextView minValueTextView = getView().findViewById(R.id.minValueTextView);
+        minValueTextView.setText(String.valueOf(minValue));
+
+        TextView maxValueTextView = getView().findViewById(R.id.maxValueTextView);
+        maxValueTextView.setText(String.valueOf(maxValue));
+
+        TextView averageValueTextView = getView().findViewById(R.id.averageValueTextView);
+        averageValueTextView.setText(String.valueOf(averageValue));
     }
 
     @Override
@@ -73,44 +77,19 @@ public class PhotoresistorView extends AbstractView {
         data = new LineData(labels, dataset);
         lineChart.setData(data);
         lineChart.setDescription(this.getCtx().getString(R.string.photoresistorchart_desc));
+    }
 
-        Button photoresistorBtnAdd = this.getView().findViewById(R.id.photoresistorBtnAdd);
-        photoresistorBtnAdd.setOnClickListener(new View.OnClickListener() {
+    private List<String> getLabels(int counter) {
+        List<String> labels = new ArrayList<>();
+        for (int i = 0; i < counter; i++) {
+            labels.add(String.valueOf(i));
+        }
+        return labels;
+    }
 
-            int counter = 0;
+    @Override
+    public void update() {
 
-            @Override
-            public void onClick(View view) {
-                int i = ThreadLocalRandom.current().nextInt(0, 10 + 1);
-
-                Entry entry = new Entry(i, ++counter);
-                dataset.addEntry(entry);
-                data.clearValues();
-                data.addDataSet(dataset);
-                updateLineChart(getLabels(counter));
-
-                maxValue = Math.max(i, maxValue);
-                minValue = Math.min(i, minValue);
-                averageValue = calcAverageValue();
-
-                TextView minValueTextView = getView().findViewById(R.id.minValueTextView);
-                minValueTextView.setText(String.valueOf(minValue));
-
-                TextView maxValueTextView = getView().findViewById(R.id.maxValueTextView);
-                maxValueTextView.setText(String.valueOf(maxValue));
-
-                TextView averageValueTextView = getView().findViewById(R.id.averageValueTextView);
-                averageValueTextView.setText(String.valueOf(averageValue));
-            }
-
-            private List<String> getLabels(int counter) {
-                List<String> labels = new ArrayList<>();
-                for (int i = 0; i < counter; i++) {
-                    labels.add(String.valueOf(i));
-                }
-                return labels;
-            }
-        });
     }
 
     private float calcAverageValue() {
@@ -129,4 +108,5 @@ public class PhotoresistorView extends AbstractView {
         lineChart.setData(data);
         lineChart.animateY(500);
     }
+
 }

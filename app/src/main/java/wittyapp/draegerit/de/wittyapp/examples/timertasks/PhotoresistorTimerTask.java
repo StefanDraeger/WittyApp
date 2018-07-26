@@ -4,9 +4,12 @@ import android.util.Log;
 
 import java.util.TimerTask;
 
-public class PhotoresistorTimerTask extends TimerTask {
+import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
+
+public class PhotoresistorTimerTask extends AbstractTimerTask {
+
     @Override
     public void run() {
-        Log.i("WittyApp", "Hallo Welt!");
+
     }
 }

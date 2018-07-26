@@ -9,12 +9,11 @@ import java.util.TimerTask;
 public abstract class AbstractView {
 
     private EActiveView activeView;
+
     private Context ctx;
     private View view;
 
     private int updateInterval = 1000;
-
-    private Timer timer;
 
     protected AbstractView(Context context, View view) {
         this.ctx = context;
@@ -25,16 +24,13 @@ public abstract class AbstractView {
         this(context, view);
         this.activeView = activeViewType;
         initialize();
-        initTimer();
     }
 
     public abstract void clearData();
 
-    public abstract void updateTimer();
-
-    public abstract void initTimer();
-
     public abstract void initialize();
+
+    public abstract void update();
 
     public EActiveView getActiveView() {
         return activeView;
@@ -66,15 +62,6 @@ public abstract class AbstractView {
 
     public void setUpdateInterval(int updateInterval) {
         this.updateInterval = updateInterval;
-        updateTimer();
-    }
-
-    public Timer getTimer() {
-        return timer;
-    }
-
-    public void setTimer(Timer timer) {
-        this.timer = timer;
     }
 
 }

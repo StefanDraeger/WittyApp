@@ -10,13 +10,6 @@
     android:padding="15dp"
     tools:context=".examples.PhotoresistorActivity">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:text="@string/photoresistor_title"
-        android:textSize="24sp" />
-
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/chart"
         android:layout_width="match_parent"
@@ -36,12 +29,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="15dp"
-                android:text="@string/min_value" />
+                android:text="@string/min_value"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/minValueTextView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black" />
         </TableRow>
 
         <TableRow
@@ -52,12 +47,14 @@
                 android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/max_value" />
+                android:text="@string/max_value"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/maxValueTextView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black" />
         </TableRow>
 
         <TableRow
@@ -69,22 +66,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10dp"
-                android:text="@string/average_value" />
+                android:text="@string/average_value"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/averageValueTextView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black" />
         </TableRow>
 
     </TableLayout>
 
-
-    <Button
-        android:id="@+id/photoresistorBtnAdd"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Button" />
 
 </LinearLayout>

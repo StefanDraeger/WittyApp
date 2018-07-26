@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="wittyapp.draegerit.de.wittyapp">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--AppID ca-app-pub-8772239501259424~9390363923 -->
+    <!--BannerID ca-app-pub-8772239501259424/5055108067 -->
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/wittycloud"
@@ -21,7 +26,13 @@
         </activity>
         <activity android:name=".examples.PhotoresistorActivity" />
         <activity android:name=".examples.RgbLedActivity" />
-        <activity android:name=".HomeActivity"></activity>
+        <activity android:name=".HomeActivity" />
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".ImprintActivity" />
+        <activity android:name=".PrivacyPolicyActivity" />
+        <activity android:name=".examples.TemperatureSensorActivity" />
+        <activity android:name=".examples.BuzzerActivity" />
+        <activity android:name=".ConsoleActivity"></activity>
     </application>
 
 </manifest>

@@ -21,8 +21,8 @@
                 android:enabled="false"/>
         </menu>
     </item>
-   
-  <item android:title="@string/examples">
+
+    <item android:title="@string/WittyCloud">
         <menu>
             <item
                 android:id="@+id/nav_ldr_photoresitor"
@@ -32,6 +32,11 @@
                 android:id="@+id/nav_rgb_led"
                 android:icon="@drawable/ic_menu_send"
                 android:title="@string/rgb_led" />
+        </menu>
+    </item>
+   
+  <item android:title="@string/WemosD1mini">
+        <menu>
             <item
                 android:id="@+id/nav_temp"
                 android:icon="@drawable/ic_menu_send"

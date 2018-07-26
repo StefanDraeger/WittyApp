@@ -18,17 +18,12 @@ public class HomeView extends AbstractView {
     }
 
     @Override
-    public void updateTimer() {
-
-    }
-
-    @Override
-    public void initTimer() {
-
-    }
-
-    @Override
     public void initialize() {
+
+    }
+
+    @Override
+    public void update() {
 
     }
 }

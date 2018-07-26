@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WittyApp</string>
+    <string name="app_name">ESP8266-App</string>
     <string name="title_activity_start">StartActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -42,4 +42,28 @@
     <string name="ipaddress">IP Address</string>
     <string name="ipaddress_match_fail">IP Address incorrect (IPv4)</string>
     <string name="connectToDevice">Connect to device</string>
+    <string name="msg_loaddialog_titel">Please wait....</string>
+    <string name="msg_loaddialog_message">Data is loading...</string>
+    <string name="connectionRefused">Connection refused</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="datenschutztext">The use of App "ESP8266-App" by Stefan Draeger Software is possible without declaration of personal
+        Related data. We emphasize that data transfer on Internet  (e.g. through e-mail communication) can have security loopholes.
+        A watertight safeguard to data access through a third party is not guaranteed.
+        Commercials and information material, which are not called up, are herewith prohibited.</string>
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="home_title">WittyApp</string>
+    <string name="rgbled_title">RGB LED</string>
+    <string name="settings_title">Settings</string>
+    <string name="imprint_title">Imprint</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="temperature_sensor_title">Temperature Sensor</string>
+    <string name="buzzer_title">Buzzer</string>
+    <string name="console_title">Console</string>
+    <string name="no_items_found">No Items found!</string>
+    <string name="refresh">Refresh</string>
+    <string name="timer_off">Timer off</string>
+    <string name="WittyCloud">WittyCloud</string>
+    <string name="WemosD1mini">Wemos D1 mini</string>
+    <string name="frequenz_text">Frequenz</string>
+    <string name="duration_text">Duration</string>
 </resources>
