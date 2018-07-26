@@ -38,6 +38,10 @@
   <item android:title="@string/WemosD1mini">
         <menu>
             <item
+                android:id="@+id/nav_rgb_led2"
+                android:icon="@drawable/ic_menu_send"
+                android:title="@string/rgb_led" />
+            <item
                 android:id="@+id/nav_temp"
                 android:icon="@drawable/ic_menu_send"
                 android:title="@string/temperature_sensor" />

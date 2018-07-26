@@ -11,11 +11,13 @@ public final class PreferencesUtil {
     private static final String PREFS_NAME = "wittyApp";
     private static final String IPADDRESS_PREF = "ipAddressPref";
     private static final String RGBCOLOR_PREF = "rgbColorPref";
+    private static final String BUZZER_PREF = "buzzerPref";
 
 
     private static final String EMPTY = "";
     private static final int ZERO = 0;
     private static final int IN_DELAY = 3;
+    private static String defaultBuzzerJson;
 
     private PreferencesUtil() {
 
@@ -39,6 +41,15 @@ public final class PreferencesUtil {
         editor.apply();
     }
 
+    public static void storeBuzzerValue(Context ctx, BuzzerValue buzzerValue) {
+        SharedPreferences settings = ctx.getSharedPreferences(PREFS_NAME, ZERO);
+        SharedPreferences.Editor editor = settings.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(buzzerValue);
+        editor.putString(BUZZER_PREF, json);
+        editor.apply();
+    }
+
     public static String getIpAddress(Context ctx) {
         SharedPreferences settings = ctx.getSharedPreferences(PREFS_NAME, ZERO);
         String json = settings.getString(IPADDRESS_PREF, EMPTY);
@@ -59,6 +70,16 @@ public final class PreferencesUtil {
         return null;
     }
 
+    public static BuzzerValue getBuzzerValue(Context ctx) {
+        SharedPreferences settings = ctx.getSharedPreferences(PREFS_NAME, ZERO);
+        String json = settings.getString(BUZZER_PREF, getDefaultBuzzerJson());
+        if (!isBlank(json)) {
+            Gson gson = new Gson();
+            return gson.fromJson(json, BuzzerValue.class);
+        }
+        return null;
+    }
+
     private static String getDefaultRgbColorJson() {
         return new Gson().toJson(new RgbColor(0, 0, 0));
     }
@@ -67,5 +88,7 @@ public final class PreferencesUtil {
         return value == null || value.trim().length() == ZERO;
     }
 
-
+    public static String getDefaultBuzzerJson() {
+        return new Gson().toJson(new BuzzerValue(31,1000));
+    }
 }

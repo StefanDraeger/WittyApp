@@ -6,9 +6,13 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
+import java.util.prefs.PreferencesFactory;
+
 import wittyapp.draegerit.de.wittyapp.R;
 import wittyapp.draegerit.de.wittyapp.util.AbstractView;
+import wittyapp.draegerit.de.wittyapp.util.BuzzerValue;
 import wittyapp.draegerit.de.wittyapp.util.EActiveView;
+import wittyapp.draegerit.de.wittyapp.util.PreferencesUtil;
 
 public class BuzzerView extends AbstractView implements View.OnKeyListener {
 
@@ -32,8 +36,13 @@ public class BuzzerView extends AbstractView implements View.OnKeyListener {
 
     @Override
     public void initialize() {
+        BuzzerValue buzzerValue = PreferencesUtil.getBuzzerValue(getCtx());
         frequenzEditText = getView().findViewById(R.id.frequenzEditText);
+        frequenzEditText.setText(String.valueOf(buzzerValue.getFrequenz()));
+        frequenzEditText.setOnKeyListener(this);
+
         frequenzSeekBar = getView().findViewById(R.id.frequenzSeekBar);
+        frequenzSeekBar.setProgress(buzzerValue.getFrequenz());
         frequenzSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -52,7 +61,11 @@ public class BuzzerView extends AbstractView implements View.OnKeyListener {
         });
 
         durationEditText = getView().findViewById(R.id.durationEditText);
+        durationEditText.setOnKeyListener(this);
+        durationEditText.setText(String.valueOf(buzzerValue.getDuration()));
+
         durationSeekBar = getView().findViewById(R.id.durationSeekBar);
+        durationSeekBar.setProgress(buzzerValue.getDuration());
         durationSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

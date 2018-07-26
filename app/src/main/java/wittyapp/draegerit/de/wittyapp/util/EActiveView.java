@@ -6,6 +6,7 @@ public enum EActiveView {
     HOME(0, R.id.nav_home, R.layout.activity_home, R.string.home_title),
     PHOTORESISTOR(1, R.id.nav_ldr_photoresitor, R.layout.activity_photoresistor, R.string.photoresistor_title),
     RGB_LED(1, R.id.nav_rgb_led, R.layout.activity_rgb_led, R.string.rgbled_title),
+    RGB_LED2(1, R.id.nav_rgb_led2, R.layout.activity_rgb_led, R.string.rgbled_title),
     TEMPERATUR_SENSOR(1,R.id.nav_temp,R.layout.activity_temperature_sensor,R.string.temperature_sensor_title),
     BUZZER(1,R.id.nav_buzzer,R.layout.activity_buzzer,R.string.buzzer_title),
     CONSOLE(1,R.id.nav_console,R.layout.activity_console,R.string.console_title),

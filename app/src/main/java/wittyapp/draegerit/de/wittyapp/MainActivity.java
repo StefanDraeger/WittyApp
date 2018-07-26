@@ -46,9 +46,11 @@ import java.util.concurrent.ExecutionException;
 import wittyapp.draegerit.de.wittyapp.examples.BuzzerView;
 import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
 import wittyapp.draegerit.de.wittyapp.examples.RGBLedView;
+import wittyapp.draegerit.de.wittyapp.examples.TempSensorView;
 import wittyapp.draegerit.de.wittyapp.examples.timertasks.AbstractTimerTask;
 import wittyapp.draegerit.de.wittyapp.examples.timertasks.PhotoresistorTimerTask;
 import wittyapp.draegerit.de.wittyapp.util.AbstractView;
+import wittyapp.draegerit.de.wittyapp.util.BuzzerValue;
 import wittyapp.draegerit.de.wittyapp.util.EAction;
 import wittyapp.draegerit.de.wittyapp.util.EActiveView;
 import wittyapp.draegerit.de.wittyapp.util.IPAddressValidator;
@@ -185,6 +187,7 @@ public class MainActivity extends AppCompatActivity
             connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else if (activeView instanceof BuzzerView) {
             BuzzerView buzzerView = (BuzzerView) activeView;
+            PreferencesUtil.storeBuzzerValue(getApplicationContext(), new BuzzerValue(buzzerView.getFrequenz(), buzzerView.getDuration()));
             ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.BUZZER);
             connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
@@ -384,11 +387,15 @@ public class MainActivity extends AppCompatActivity
             case PHOTORESISTOR:
                 this.activeView = new PhotoresistorView(getApplicationContext(), viewSwitcher);
                 break;
+            case RGB_LED2:
             case RGB_LED:
                 this.activeView = new RGBLedView(getApplicationContext(), viewSwitcher);
                 break;
             case BUZZER:
                 this.activeView = new BuzzerView(getApplicationContext(), viewSwitcher);
+                break;
+            case TEMPERATUR_SENSOR:
+                this.activeView = new TempSensorView(getApplicationContext(), viewSwitcher);
                 break;
             case SETTINGS:
                 break;

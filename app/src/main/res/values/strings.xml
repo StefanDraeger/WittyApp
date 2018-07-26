@@ -66,4 +66,17 @@
     <string name="WemosD1mini">Wemos D1 mini</string>
     <string name="frequenz_text">Frequenz</string>
     <string name="duration_text">Duration</string>
+    <string name="sht30">SHT30</string>
+    <string name="ds18b20">DS18B20</string>
+    <string name="dht11">DHT11</string>
+    <string name="dht22">DHT22</string>
+    <string name="sensorType">Sensortype</string>
+
+    <array name="tempsensors">
+        <item>SHT30</item>
+        <item>DS18B20</item>
+        <item>BMP180</item>
+        <item>DHT11</item>
+        <item>DHT22</item>
+    </array>
 </resources>
