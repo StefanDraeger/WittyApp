@@ -12,13 +12,21 @@
         <menu>
             <item
                 android:id="@+id/nav_connect"
-                android:icon="@drawable/ic_phonelink_black_24dp"
-                android:title="@string/connect" />
+                android:icon="@drawable/ic_developer_board_black_24dp"
+                android:title="@string/set_device_address" />
+        </menu>
+    </item>
+
+    <item android:title="@string/esp01s">
+        <menu>
             <item
-                android:id="@+id/nav_disconnect"
-                android:icon="@drawable/ic_phonelink_off_black_24dp"
-                android:title="@string/disconnect"
-                android:enabled="false"/>
+                android:id="@+id/nav_esp01sdht11"
+                android:icon="@drawable/ic_menu_send"
+                android:title="@string/dht11sensor" />
+            <item
+                android:id="@+id/nav_esp01srelais"
+                android:icon="@drawable/ic_menu_send"
+                android:title="@string/relaisshield" />
         </menu>
     </item>
 
@@ -49,6 +57,10 @@
                 android:id="@+id/nav_buzzer"
                 android:icon="@drawable/ic_menu_send"
                 android:title="@string/buzzer" />
+            <item
+                android:id="@+id/nav_relay"
+                android:icon="@drawable/ic_menu_send"
+                android:title="@string/relay" />
         </menu>
     </item>
 
@@ -68,10 +80,6 @@
                 android:id="@+id/nav_impressum"
                 android:icon="@drawable/ic_help_black_24dp"
                 android:title="@string/impressum" />
-            <item
-                android:id="@+id/nav_privacy_policy"
-                android:icon="@drawable/ic_card_membership_black_24dp"
-                android:title="@string/privacy_policy" />
         </menu>
     </item>
 

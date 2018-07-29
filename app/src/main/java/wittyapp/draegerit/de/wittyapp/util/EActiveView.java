@@ -9,10 +9,10 @@ public enum EActiveView {
     RGB_LED2(1, R.id.nav_rgb_led2, R.layout.activity_rgb_led, R.string.rgbled_title),
     TEMPERATUR_SENSOR(1,R.id.nav_temp,R.layout.activity_temperature_sensor,R.string.temperature_sensor_title),
     BUZZER(1,R.id.nav_buzzer,R.layout.activity_buzzer,R.string.buzzer_title),
+    RELAY(1,R.id.nav_relay,R.layout.activity_relay,R.string.relay_title),
     CONSOLE(1,R.id.nav_console,R.layout.activity_console,R.string.console_title),
     SETTINGS(1, R.id.nav_settings, R.layout.activity_settings, R.string.settings_title),
-    IMPRINT(1, R.id.nav_impressum, R.layout.activity_imprint, R.string.imprint_title),
-    PRIVACY_POLICY(1, R.id.nav_privacy_policy, R.layout.activity_privacy_policy, R.string.privacy_policy_title);
+    IMPRINT(1, R.id.nav_impressum, R.layout.activity_imprint, R.string.imprint_title);
 
     int position;
     int menuItemId;

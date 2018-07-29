@@ -79,14 +79,6 @@ public class PhotoresistorView extends AbstractView {
         lineChart.setDescription(this.getCtx().getString(R.string.photoresistorchart_desc));
     }
 
-    private List<String> getLabels(int counter) {
-        List<String> labels = new ArrayList<>();
-        for (int i = 0; i < counter; i++) {
-            labels.add(String.valueOf(i));
-        }
-        return labels;
-    }
-
     @Override
     public void update() {
 

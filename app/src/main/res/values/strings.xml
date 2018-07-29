@@ -71,6 +71,17 @@
     <string name="dht11">DHT11</string>
     <string name="dht22">DHT22</string>
     <string name="sensorType">Sensortype</string>
+    <string name="set_device_address">Set device IP-Address</string>
+    <string name="esp01s">ESP-01S</string>
+    <string name="dht11sensor">DHT11 Sensor</string>
+    <string name="relaisshield">Relay Shield</string>
+    <string name="relay">Relay</string>
+    <string name="relay_title">Relay Shield</string>
+    <string name="minValue">min. Value</string>
+    <string name="einheit">Unity</string>
+    <string name="tempC">Temp. C</string>
+    <string name="tempF">Temp. F</string>
+    <string name="humidity">Humidity</string>
 
     <array name="tempsensors">
         <item>SHT30</item>

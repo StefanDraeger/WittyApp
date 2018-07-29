@@ -46,6 +46,7 @@ import java.util.concurrent.ExecutionException;
 import wittyapp.draegerit.de.wittyapp.examples.BuzzerView;
 import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
 import wittyapp.draegerit.de.wittyapp.examples.RGBLedView;
+import wittyapp.draegerit.de.wittyapp.examples.RelayShieldView;
 import wittyapp.draegerit.de.wittyapp.examples.TempSensorView;
 import wittyapp.draegerit.de.wittyapp.examples.timertasks.AbstractTimerTask;
 import wittyapp.draegerit.de.wittyapp.examples.timertasks.PhotoresistorTimerTask;
@@ -135,9 +136,9 @@ public class MainActivity extends AppCompatActivity
         refreshMItem.setVisible(false);
         checkMItem.setVisible(false);
 
-        if (activeView.getActiveView().equals(EActiveView.PHOTORESISTOR)) {
+        if (activeView.getActiveView().equals(EActiveView.PHOTORESISTOR) || activeView.getActiveView().equals(EActiveView.TEMPERATUR_SENSOR)) {
             clearMItem.setVisible(true);
-            downloadMItem.setVisible(true);
+           //downloadMItem.setVisible(true);
             timerMItem.setVisible(true);
             timeroffMItem.setVisible(true);
         } else if (activeView.getActiveView().equals(EActiveView.CONSOLE)) {
@@ -279,13 +280,16 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        cancelTimer();
+        if(activeAsyncTask!=null){
+            activeAsyncTask.cancel(true);
+        }
+
+
         int id = item.getItemId();
         switch (id) {
             case R.id.nav_connect:
                 connectToDevice(null);
-                break;
-            case R.id.nav_disconnect:
-                disconnectFromDevice();
                 break;
             default:
                 loadView(EActiveView.findByMenuItemId(id));
@@ -296,15 +300,8 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void disconnectFromDevice() {
-        boolean disconnectionSuccessfull = true;
-        toggleConnectionState(!disconnectionSuccessfull);
-    }
-
     private void connectToDevice(String connectionErrorMsg) {
         getIpAdressFromDialog(connectionErrorMsg);
-        boolean connectionSuccessfull = true;
-        toggleConnectionState(connectionSuccessfull);
     }
 
     private void getIpAdressFromDialog(String connectionErrorMsg) {
@@ -360,15 +357,6 @@ public class MainActivity extends AppCompatActivity
         connect(ipAdress);
     }
 
-    private void toggleConnectionState(boolean connectionSuccessfull) {
-        Menu menuNav = navigationView.getMenu();
-        MenuItem disconnectMItem = menuNav.findItem(R.id.nav_disconnect);
-        disconnectMItem.setEnabled(connectionSuccessfull);
-
-        MenuItem connectMItem = menuNav.findItem(R.id.nav_connect);
-        connectMItem.setEnabled(!connectionSuccessfull);
-    }
-
     private void loadView(EActiveView activeView) {
         viewSwitcher.setInAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left));
         viewSwitcher.setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right));
@@ -396,6 +384,9 @@ public class MainActivity extends AppCompatActivity
                 break;
             case TEMPERATUR_SENSOR:
                 this.activeView = new TempSensorView(getApplicationContext(), viewSwitcher);
+                break;
+            case RELAY:
+                this.activeView = new RelayShieldView(getApplicationContext(), viewSwitcher);
                 break;
             case SETTINGS:
                 break;
@@ -433,6 +424,19 @@ public class MainActivity extends AppCompatActivity
         this.lastIpAddress = lastIpAddress;
     }
 
+    public void fireAction(EAction action) {
+        switch (action) {
+            case RELAY:
+                fireRelayState();
+                break;
+        }
+    }
+
+    private void fireRelayState() {
+        ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.RELAY);
+        connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     class ConnectionAsyncTask extends AsyncTask<Void, Void, String> {
 
         private String ipAdress;
@@ -457,6 +461,13 @@ public class MainActivity extends AppCompatActivity
                 } else if (activeView instanceof BuzzerView) {
                     BuzzerView buzzerView = (BuzzerView) activeView;
                     urlStr += String.format(action.getActionSite(), buzzerView.getFrequenz(), buzzerView.getDuration());
+                } else if (activeView instanceof RelayShieldView) {
+                    RelayShieldView relayShieldView = (RelayShieldView) activeView;
+                    urlStr += String.format(action.getActionSite(), relayShieldView.getState());
+                } else if (activeView instanceof TempSensorView) {
+                    TempSensorView tempSensorView = (TempSensorView) activeView;
+                    EAction action = tempSensorView.getAction();
+                    urlStr += action.getActionSite();
                 } else {
                     urlStr += action.getActionSite();
                 }
@@ -495,6 +506,7 @@ public class MainActivity extends AppCompatActivity
                 case RGB_LED:
                     break;
                 case TEMP:
+                    handleTempSensorResult(result);
                     break;
                 case BUZZER:
                     break;
@@ -512,6 +524,11 @@ public class MainActivity extends AppCompatActivity
             ConsoleUtil.addEntry(new ConsoleEntry(System.currentTimeMillis(), result, false));
             return result;
         }
+    }
+
+    private void handleTempSensorResult(String result) {
+        TempSensorView tempSensorView = (TempSensorView) activeView;
+        tempSensorView.addChartEntry(result);
     }
 
     private void handlePhotoResistorResult(String result) {
@@ -555,7 +572,6 @@ public class MainActivity extends AppCompatActivity
                     case CONSOLE:
                     case SETTINGS:
                     case IMPRINT:
-                    case PRIVACY_POLICY:
                         break;
                     case PHOTORESISTOR:
                         action = EAction.PHOTORESISTOR;
@@ -563,6 +579,7 @@ public class MainActivity extends AppCompatActivity
                     case RGB_LED:
                         break;
                     case TEMPERATUR_SENSOR:
+                        action = EAction.TEMP;
                         break;
                     case BUZZER:
                         break;
