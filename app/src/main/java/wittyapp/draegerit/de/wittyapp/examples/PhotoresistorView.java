@@ -99,6 +99,7 @@ public class PhotoresistorView extends AbstractView {
         lineChart.setDescription(getCtx().getString(R.string.photoresistorchart_desc));
         lineChart.setData(data);
         lineChart.animateY(500);
+        lineChart.setDescription(getCtx().getString(R.string.desc_lastupdate, formatDateTime(System.currentTimeMillis())));
     }
 
 }

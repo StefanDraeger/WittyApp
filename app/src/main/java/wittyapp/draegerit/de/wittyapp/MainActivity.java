@@ -32,6 +32,7 @@ import android.widget.ViewSwitcher;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -138,7 +139,7 @@ public class MainActivity extends AppCompatActivity
 
         if (activeView.getActiveView().equals(EActiveView.PHOTORESISTOR) || activeView.getActiveView().equals(EActiveView.TEMPERATUR_SENSOR)) {
             clearMItem.setVisible(true);
-           //downloadMItem.setVisible(true);
+            //downloadMItem.setVisible(true);
             timerMItem.setVisible(true);
             timeroffMItem.setVisible(true);
         } else if (activeView.getActiveView().equals(EActiveView.CONSOLE)) {
@@ -281,7 +282,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         cancelTimer();
-        if(activeAsyncTask!=null){
+        if (activeAsyncTask != null) {
             activeAsyncTask.cancel(true);
         }
 
@@ -538,7 +539,10 @@ public class MainActivity extends AppCompatActivity
 
     private void handleConnectionResult(String result) {
         if (result != null) {
-            connectToDevice(result);
+            ConnectionResult connectionResult = new Gson().fromJson(result, ConnectionResult.class);
+            if (!connectionResult.getMsg().equalsIgnoreCase("Hello from ESP8266!")) {
+                connectToDevice(result);
+            }
         }
     }
 
@@ -595,5 +599,20 @@ public class MainActivity extends AppCompatActivity
             timer.cancel();
             timer.purge();
         }
+    }
+
+    public void showErrorMessage(String message) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        dialogBuilder.setTitle(getString(R.string.errorMsg));
+        dialogBuilder.setIcon(R.drawable.ic_error_outline_rot_24dp);
+        dialogBuilder.setMessage(message);
+        dialogBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
     }
 }

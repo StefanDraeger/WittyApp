@@ -82,6 +82,12 @@
     <string name="tempC">Temp. C</string>
     <string name="tempF">Temp. F</string>
     <string name="humidity">Humidity</string>
+    <string name="errorMsg">Error...</string>
+    <string name="desc_lastupdate">Last update %1s</string>
+    <string name="tempC_val">%1$.2f °C</string>
+    <string name="average_val">%1$.2f %%</string>
+    <string name="tempF_val">%1$.2f °F</string>
+    <string name="humi_val">%1$.2f %%</string>
 
     <array name="tempsensors">
         <item>SHT30</item>

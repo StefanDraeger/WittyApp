@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
+import wittyapp.draegerit.de.wittyapp.MainActivity;
 import wittyapp.draegerit.de.wittyapp.R;
 import wittyapp.draegerit.de.wittyapp.examples.adapter.ETempSensor;
 import wittyapp.draegerit.de.wittyapp.examples.adapter.EnumTempSpinnerArrayAdapter;
@@ -55,6 +56,15 @@ public class TempSensorView extends AbstractView {
     private float humiMax = 0f;
     private float humiAverage = 0f;
 
+    private TextView tempCMinValueTextView;
+    private TextView tempCMaxValueTextView;
+    private TextView tempCAvageValueTextView;
+    private TextView tempFMinValueTextView;
+    private TextView tempFMaxValueTextView;
+    private TextView tempFAvageValueTextView;
+    private TextView humMinValueTextView;
+    private TextView humMaxValueTextView;
+    private TextView humAvageValueTextView;
 
     public TempSensorView(Context ctx, ViewSwitcher viewSwitcher) {
         super(ctx, viewSwitcher, EActiveView.TEMPERATUR_SENSOR);
@@ -63,17 +73,35 @@ public class TempSensorView extends AbstractView {
     @Override
     public void clearData() {
         counter = -1;
-        tempCEntries.clear();
-        tempFEntries.clear();
-        humiEntries.clear();
+
+        tempCMin = 1000f;
+        tempCMax = 0f;
+        tempCAverage = 0f;
+
+        tempFMin = 1000f;
+        tempFMax = 0f;
+        tempFAverage = 0f;
+
+        humiMin = 1000f;
+        humiMax = 0f;
+        humiAverage = 0f;
+
+        for (DataSet<Entry> ds : lineDataSets) {
+            ds.clear();
+        }
+
         updateLineChart(getLabels(counter));
     }
 
     private void updateLineChart(List<String> lbls) {
-        data = new LineData(lbls, lineDataSets);
-        lineChart.setDescription(getCtx().getString(R.string.photoresistorchart_desc));
-        lineChart.setData(data);
-        lineChart.animateY(500);
+        try {
+            data = new LineData(lbls, lineDataSets);
+            lineChart.setDescription(getCtx().getString(R.string.photoresistorchart_desc));
+            lineChart.setData(data);
+            lineChart.animateY(500);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -89,25 +117,24 @@ public class TempSensorView extends AbstractView {
                 switch (position) {
                     case 0:
                         action = EAction.SHT30;
-                        tempCRowVis = View.VISIBLE;
-                        tempFRowVis = View.VISIBLE;
-                        humiRowVis = View.VISIBLE;
                         break;
                     case 1:
                         action = EAction.DS18B20;
-                        tempCRowVis = View.VISIBLE;
                         break;
                     case 2:
                         action = EAction.DHT11;
-                        tempCRowVis = View.VISIBLE;
-                        tempFRowVis = View.VISIBLE;
-                        humiRowVis = View.VISIBLE;
                         break;
                     case 3:
                         action = EAction.DHT22;
-                        tempCRowVis = View.VISIBLE;
-                        humiRowVis = View.VISIBLE;
                         break;
+                }
+
+                if (action.equals(EAction.SHT30) || action.equals(EAction.DHT11) || action.equals(EAction.DHT22)) {
+                    tempCRowVis = View.VISIBLE;
+                    tempFRowVis = View.VISIBLE;
+                    humiRowVis = View.VISIBLE;
+                } else if (action.equals(EAction.DS18B20)) {
+                    tempCRowVis = View.VISIBLE;
                 }
 
                 TableRow tempCRow = getView().findViewById(R.id.tempCRow);
@@ -155,6 +182,16 @@ public class TempSensorView extends AbstractView {
         data = new LineData(new ArrayList<String>(), lineDataSets);
         lineChart.setData(data);
         lineChart.setDescription(this.getCtx().getString(R.string.photoresistorchart_desc));
+
+        tempCMinValueTextView = getView().findViewById(R.id.tempCMinValueTextView);
+        tempCMaxValueTextView = getView().findViewById(R.id.tempCMaxValueTextView);
+        tempCAvageValueTextView = getView().findViewById(R.id.tempCAvageValueTextView);
+        tempFMinValueTextView = getView().findViewById(R.id.tempFMinValueTextView);
+        tempFMaxValueTextView = getView().findViewById(R.id.tempFMaxValueTextView);
+        tempFAvageValueTextView = getView().findViewById(R.id.tempFAvageValueTextView);
+        humMinValueTextView = getView().findViewById(R.id.humMinValueTextView);
+        humMaxValueTextView = getView().findViewById(R.id.humMaxValueTextView);
+        humAvageValueTextView = getView().findViewById(R.id.humAvageValueTextView);
     }
 
     @Override
@@ -164,14 +201,22 @@ public class TempSensorView extends AbstractView {
 
     public void addChartEntry(String result) {
         if (this.action.equals(EAction.SHT30) ||
-                this.action.equals(EAction.DHT11)) {
+                this.action.equals(EAction.DHT11) ||
+                this.action.equals(EAction.DHT22)) {
             TempCFHResult sht30Result = new Gson().fromJson(result, TempCFHResult.class);
-            ++counter;
-            this.tempCDataset.addEntry(new Entry(sht30Result.getTempC(), counter));
-            this.tempFDataset.addEntry(new Entry(sht30Result.getTempF(), counter));
-            this.humiDataset.addEntry(new Entry(sht30Result.getHumi(), counter));
-            updateLineChart(getLabels(counter));
-            calcTempHumData(sht30Result.getTempC(), sht30Result.getTempF(), sht30Result.getHumi());
+            if (sht30Result.getMsg().isEmpty()) {
+                ++counter;
+                this.tempCDataset.addEntry(new Entry(sht30Result.getTempC(), counter));
+                this.tempFDataset.addEntry(new Entry(sht30Result.getTempF(), counter));
+                this.humiDataset.addEntry(new Entry(sht30Result.getHumi(), counter));
+                updateLineChart(getLabels(counter));
+                calcTempHumData(sht30Result.getTempC(), sht30Result.getTempF(), sht30Result.getHumi());
+                lineChart.setDescription(getCtx().getString(R.string.desc_lastupdate, formatDateTime(System.currentTimeMillis())));
+            } else {
+                MainActivity mainActivity = (MainActivity) getView().getContext();
+                mainActivity.cancelTimer();
+                mainActivity.showErrorMessage(sht30Result.getMsg());
+            }
         }
     }
 
@@ -188,26 +233,17 @@ public class TempSensorView extends AbstractView {
         humiMin = Math.min(humi, humiMin);
         humiAverage = calcAverageValue(2);
 
-        TextView tempCMinValueTextView = getView().findViewById(R.id.tempCMinValueTextView);
-        tempCMinValueTextView.setText(String.valueOf(tempCMin) + "°C");
-        TextView tempCMaxValueTextView = getView().findViewById(R.id.tempCMaxValueTextView);
-        tempCMaxValueTextView.setText(String.valueOf(tempCMax) + "°C");
-        TextView tempCAvageValueTextView = getView().findViewById(R.id.tempCAvageValueTextView);
-        tempCAvageValueTextView.setText(String.valueOf(tempCAverage) + "%");
+        tempCMinValueTextView.setText(getCtx().getString(R.string.tempC_val, tempCMin));
+        tempCMaxValueTextView.setText(getCtx().getString(R.string.tempC_val, tempCMax));
+        tempCAvageValueTextView.setText(getCtx().getString(R.string.tempC_val, tempCAverage));
 
-        TextView tempFMinValueTextView = getView().findViewById(R.id.tempFMinValueTextView);
-        tempFMinValueTextView.setText(String.valueOf(tempFMin) + "°F");
-        TextView tempFMaxValueTextView = getView().findViewById(R.id.tempFMaxValueTextView);
-        tempFMaxValueTextView.setText(String.valueOf(tempFMax) + "°F");
-        TextView tempFAvageValueTextView = getView().findViewById(R.id.tempFAvageValueTextView);
-        tempFAvageValueTextView.setText(String.valueOf(tempFAverage) + "%");
+        tempFMinValueTextView.setText(getCtx().getString(R.string.tempF_val, tempFMin));
+        tempFMaxValueTextView.setText(getCtx().getString(R.string.tempF_val, tempFMax));
+        tempFAvageValueTextView.setText(getCtx().getString(R.string.tempF_val, tempFAverage));
 
-        TextView humMinValueTextView = getView().findViewById(R.id.humMinValueTextView);
-        humMinValueTextView.setText(String.valueOf(humiMin) + "%");
-        TextView humMaxValueTextView = getView().findViewById(R.id.humMaxValueTextView);
-        humMaxValueTextView.setText(String.valueOf(humiMax) + "%");
-        TextView humAvageValueTextView = getView().findViewById(R.id.humAvageValueTextView);
-        humAvageValueTextView.setText(String.valueOf(humiAverage) + "%");
+        humMinValueTextView.setText(getCtx().getString(R.string.humi_val, humiMin));
+        humMaxValueTextView.setText(getCtx().getString(R.string.humi_val, humiMax));
+        humAvageValueTextView.setText(getCtx().getString(R.string.humi_val, humiAverage));
     }
 
     private float calcAverageValue(int pos) {

@@ -3,12 +3,18 @@ package wittyapp.draegerit.de.wittyapp.util;
 import android.content.Context;
 import android.view.View;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public abstract class AbstractView {
+
+    private static final String DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm:ss,SSS";
+    private static DateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
 
     private EActiveView activeView;
 
@@ -72,5 +78,9 @@ public abstract class AbstractView {
             labels.add(String.valueOf(i));
         }
         return labels;
+    }
+
+    protected String formatDateTime(long timestamp) {
+        return dateFormat.format(new Date(timestamp));
     }
 }
