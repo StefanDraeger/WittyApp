@@ -32,7 +32,8 @@
         <activity android:name=".examples.TemperatureSensorActivity" />
         <activity android:name=".examples.BuzzerActivity" />
         <activity android:name=".ConsoleActivity" />
-        <activity android:name=".examples.RelayActivity"></activity>
+        <activity android:name=".examples.RelayActivity" />
+        <activity android:name=".examples.MatrixActivity"></activity>
     </application>
 
 </manifest>

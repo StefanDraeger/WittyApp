@@ -61,6 +61,10 @@
                 android:id="@+id/nav_relay"
                 android:icon="@drawable/ic_menu_send"
                 android:title="@string/relay" />
+            <item
+                android:id="@+id/nav_8matrix"
+                android:icon="@drawable/ic_menu_send"
+                android:title="@string/matrix" />
         </menu>
     </item>
 

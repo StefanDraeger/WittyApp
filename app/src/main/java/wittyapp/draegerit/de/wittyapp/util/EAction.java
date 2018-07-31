@@ -10,7 +10,8 @@ public enum EAction {
     DS18B20("/ds18b20"),
     DHT11("/dht?type=dht11"),
     DHT22("/dht?type=dht22"),
-    RELAY("/relay?state=%d");
+    RELAY("/relay?state=%d"),
+    MATRIX("/matrix?brightness=%d&row=%d&col=%d&state=%d&clear=%d");
 
     String actionSite;
 

@@ -88,6 +88,12 @@
     <string name="average_val">%1$.2f %%</string>
     <string name="tempF_val">%1$.2f °F</string>
     <string name="humi_val">%1$.2f %%</string>
+    <string name="matrix">8×8 LED Matrix Shield</string>
+    <string name="matrix_title">8×8 LED Matrix Shield</string>
+    <string name="brightness_text">Brightness</string>
+    <string name="imageResId">imageResId</string>
+    <string name="currentRowId">currentRowId</string>
+    <string name="currentColId">currentColId</string>
 
     <array name="tempsensors">
         <item>SHT30</item>

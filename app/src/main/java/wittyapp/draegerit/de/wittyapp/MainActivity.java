@@ -45,6 +45,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
 import wittyapp.draegerit.de.wittyapp.examples.BuzzerView;
+import wittyapp.draegerit.de.wittyapp.examples.MatrixView;
 import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
 import wittyapp.draegerit.de.wittyapp.examples.RGBLedView;
 import wittyapp.draegerit.de.wittyapp.examples.RelayShieldView;
@@ -148,6 +149,8 @@ public class MainActivity extends AppCompatActivity
         } else if (activeView.getActiveView().equals(EActiveView.RGB_LED) ||
                 activeView.getActiveView().equals(EActiveView.BUZZER)) {
             checkMItem.setVisible(true);
+        } else if (activeView.getActiveView().equals(EActiveView.MATRIX)) {
+            clearMItem.setVisible(true);
         }
 
         return true;
@@ -191,6 +194,9 @@ public class MainActivity extends AppCompatActivity
             BuzzerView buzzerView = (BuzzerView) activeView;
             PreferencesUtil.storeBuzzerValue(getApplicationContext(), new BuzzerValue(buzzerView.getFrequenz(), buzzerView.getDuration()));
             ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.BUZZER);
+            connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else if (activeView instanceof MatrixView) {
+            ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.MATRIX);
             connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
@@ -389,6 +395,9 @@ public class MainActivity extends AppCompatActivity
             case RELAY:
                 this.activeView = new RelayShieldView(getApplicationContext(), viewSwitcher);
                 break;
+            case MATRIX:
+                this.activeView = new MatrixView(getApplicationContext(), viewSwitcher);
+                break;
             case SETTINGS:
                 break;
             case CONSOLE:
@@ -430,7 +439,15 @@ public class MainActivity extends AppCompatActivity
             case RELAY:
                 fireRelayState();
                 break;
+            case MATRIX:
+                fireMatrixState();
+                break;
         }
+    }
+
+    private void fireMatrixState() {
+        ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.MATRIX);
+        connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void fireRelayState() {
@@ -469,6 +486,15 @@ public class MainActivity extends AppCompatActivity
                     TempSensorView tempSensorView = (TempSensorView) activeView;
                     EAction action = tempSensorView.getAction();
                     urlStr += action.getActionSite();
+                } else if (activeView instanceof MatrixView) {
+                    MatrixView matrixView = (MatrixView) activeView;
+                    urlStr += String.format(action.getActionSite(),
+                            matrixView.getBrightness(),
+                            matrixView.getCurrentRow(),
+                            matrixView.getCurrentCol(),
+                            matrixView.getState(),
+                            matrixView.getClear()
+                    );
                 } else {
                     urlStr += action.getActionSite();
                 }
@@ -509,6 +535,9 @@ public class MainActivity extends AppCompatActivity
                 case TEMP:
                     handleTempSensorResult(result);
                     break;
+                case MATRIX:
+                    handleMatrixResult(result);
+                    break;
                 case BUZZER:
                     break;
             }
@@ -525,6 +554,11 @@ public class MainActivity extends AppCompatActivity
             ConsoleUtil.addEntry(new ConsoleEntry(System.currentTimeMillis(), result, false));
             return result;
         }
+    }
+
+    private void handleMatrixResult(String result) {
+        MatrixView matrixView = (MatrixView) activeView;
+        matrixView.setClear(0);
     }
 
     private void handleTempSensorResult(String result) {

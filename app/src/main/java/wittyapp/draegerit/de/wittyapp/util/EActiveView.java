@@ -10,6 +10,7 @@ public enum EActiveView {
     TEMPERATUR_SENSOR(1,R.id.nav_temp,R.layout.activity_temperature_sensor,R.string.temperature_sensor_title),
     BUZZER(1,R.id.nav_buzzer,R.layout.activity_buzzer,R.string.buzzer_title),
     RELAY(1,R.id.nav_relay,R.layout.activity_relay,R.string.relay_title),
+    MATRIX(1,R.id.nav_8matrix,R.layout.activity_matrix,R.string.matrix_title),
     CONSOLE(1,R.id.nav_console,R.layout.activity_console,R.string.console_title),
     SETTINGS(1, R.id.nav_settings, R.layout.activity_settings, R.string.settings_title),
     IMPRINT(1, R.id.nav_impressum, R.layout.activity_imprint, R.string.imprint_title);
