@@ -7,9 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -42,7 +40,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
 
 import wittyapp.draegerit.de.wittyapp.examples.BuzzerView;
 import wittyapp.draegerit.de.wittyapp.examples.MatrixView;
@@ -50,8 +47,6 @@ import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
 import wittyapp.draegerit.de.wittyapp.examples.RGBLedView;
 import wittyapp.draegerit.de.wittyapp.examples.RelayShieldView;
 import wittyapp.draegerit.de.wittyapp.examples.TempSensorView;
-import wittyapp.draegerit.de.wittyapp.examples.timertasks.AbstractTimerTask;
-import wittyapp.draegerit.de.wittyapp.examples.timertasks.PhotoresistorTimerTask;
 import wittyapp.draegerit.de.wittyapp.util.AbstractView;
 import wittyapp.draegerit.de.wittyapp.util.BuzzerValue;
 import wittyapp.draegerit.de.wittyapp.util.EAction;
@@ -75,6 +70,9 @@ public class MainActivity extends AppCompatActivity
 
     private AbstractView activeView;
     private Timer timer;
+    private TimerTask timerTask;
+
+    private boolean timerIsRunning = false;
 
     private AsyncTask activeAsyncTask;
 
@@ -119,6 +117,39 @@ public class MainActivity extends AppCompatActivity
 
         activeView = new HomeView(getApplicationContext(), viewSwitcher);
         setLastIpAddress(PreferencesUtil.getIpAddress(getApplicationContext()));
+
+        timerTask = createDefaultTimerTask();
+
+        toggleESPShieldFunctions(false);
+    }
+
+    private TimerTask createDefaultTimerTask() {
+        return new TimerTask() {
+            @Override
+            public void run() {
+                timerIsRunning = true;
+                EAction action = null;
+                switch (activeView.getActiveView()) {
+                    case HOME:
+                    case CONSOLE:
+                    case SETTINGS:
+                    case IMPRINT:
+                        break;
+                    case PHOTORESISTOR:
+                        action = EAction.PHOTORESISTOR;
+                        break;
+                    case RGB_LED:
+                        break;
+                    case TEMPERATUR_SENSOR:
+                        action = EAction.TEMP;
+                        break;
+                    case BUZZER:
+                        break;
+                }
+                ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), action);
+                connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        };
     }
 
     @Override
@@ -152,6 +183,9 @@ public class MainActivity extends AppCompatActivity
         } else if (activeView.getActiveView().equals(EActiveView.MATRIX)) {
             clearMItem.setVisible(true);
         }
+
+        timerMItem.setEnabled(!timerIsRunning);
+        timeroffMItem.setEnabled(timerIsRunning);
 
         return true;
     }
@@ -210,7 +244,7 @@ public class MainActivity extends AppCompatActivity
         dialogBuilder.setIcon(R.drawable.ic_timer_blue_24dp);
         final RadioGroup updateIntervalRadioGroup = dialogView.findViewById(R.id.updateIntervalRadioGroup);
 
-        RadioButton rBtn = null;
+        RadioButton rBtn;
         switch (activeView.getUpdateInterval()) {
             default:
             case 1000:
@@ -261,6 +295,7 @@ public class MainActivity extends AppCompatActivity
                 activeView.setUpdateInterval(updateInterval * 1000);
                 cancelTimer();
                 startTimer();
+                toggleStartTimerAction();
                 alertDialog.dismiss();
             }
         });
@@ -272,6 +307,10 @@ public class MainActivity extends AppCompatActivity
                 alertDialog.dismiss();
             }
         });
+    }
+
+    private void toggleStartTimerAction() {
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -406,6 +445,9 @@ public class MainActivity extends AppCompatActivity
             case IMPRINT:
                 this.activeView = new ImprintView(getApplicationContext(), viewSwitcher);
                 break;
+            case HELP:
+                this.activeView = new HelpView(getApplicationContext(), viewSwitcher);
+                break;
         }
 
         invalidateOptionsMenu();
@@ -505,7 +547,7 @@ public class MainActivity extends AppCompatActivity
                 OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
                 wr.write(parameterBuffer.toString());
                 wr.flush();
-                return readResult(conn);
+                return readResult(conn, action);
             } catch (Exception e) {
                 connectionErrorMsg = e.getMessage();
             }
@@ -523,6 +565,15 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             progressDialog.dismiss();
+
+            if (result.equals("Host unreachable")) {
+                handleHostUnreachable();
+                cancelTimer();
+                return;
+            } else {
+                toggleESPShieldFunctions(true);
+            }
+
             switch (action) {
                 case CONNECT:
                     handleConnectionResult(result);
@@ -543,7 +594,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        private String readResult(URLConnection conn) throws IOException {
+        private String readResult(URLConnection conn, EAction action) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String line;
@@ -552,6 +603,9 @@ public class MainActivity extends AppCompatActivity
             }
             String result = sb.toString();
             ConsoleUtil.addEntry(new ConsoleEntry(System.currentTimeMillis(), result, false));
+            if (action.equals(EAction.CONNECT)) {
+                showInfoMessage(result);
+            }
             return result;
         }
     }
@@ -573,11 +627,49 @@ public class MainActivity extends AppCompatActivity
 
     private void handleConnectionResult(String result) {
         if (result != null) {
-            ConnectionResult connectionResult = new Gson().fromJson(result, ConnectionResult.class);
-            if (!connectionResult.getMsg().equalsIgnoreCase("Hello from ESP8266!")) {
-                connectToDevice(result);
+            if (!result.equals("Host unreachable") && !result.equals("Hello from ESP8266!")) {
+                ConnectionResult connectionResult = new Gson().fromJson(result, ConnectionResult.class);
+                if (!connectionResult.getMsg().equals("Hello from ESP8266!")) {
+                    connectToDevice(result);
+                }
+            } else if (result.equals("Host unreachable")) {
+                handleHostUnreachable();
+            } else if (result.equals("Hello from ESP8266!")) {
+                showInfoMessage("Hello from ESP8266!");
             }
         }
+    }
+
+    public void handleHostUnreachable() {
+        showErrorMessage("Host unreachable");
+        if (navigationView != null) {
+            toggleESPShieldFunctions(false);
+        }
+
+        cancelTimer();
+        if (timerTask != null) {
+            timerTask.cancel();
+        }
+    }
+
+    private void toggleESPShieldFunctions(boolean active) {
+        Menu menu = navigationView.getMenu();
+        toggleMenuItem(menu, R.id.nav_esp01sdht11, active);
+        toggleMenuItem(menu, R.id.nav_esp01srelais, active);
+        toggleMenuItem(menu, R.id.nav_ldr_photoresitor, active);
+        toggleMenuItem(menu, R.id.nav_rgb_led, active);
+        toggleMenuItem(menu, R.id.nav_rgb_led2, active);
+        toggleMenuItem(menu, R.id.nav_temp, active);
+        toggleMenuItem(menu, R.id.nav_buzzer, active);
+        toggleMenuItem(menu, R.id.nav_relay, active);
+        toggleMenuItem(menu, R.id.nav_8matrix, active);
+        navigationView.invalidate();
+    }
+
+    private void toggleMenuItem(Menu menu, int menuItemId, boolean active) {
+        MenuItem item;
+        item = menu.findItem(menuItemId);
+        item.setEnabled(active);
     }
 
     private ProgressDialog getWaitDialog() {
@@ -601,31 +693,14 @@ public class MainActivity extends AppCompatActivity
 
     public void startTimer() {
         timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                EAction action = null;
-                switch (activeView.getActiveView()) {
-                    case HOME:
-                    case CONSOLE:
-                    case SETTINGS:
-                    case IMPRINT:
-                        break;
-                    case PHOTORESISTOR:
-                        action = EAction.PHOTORESISTOR;
-                        break;
-                    case RGB_LED:
-                        break;
-                    case TEMPERATUR_SENSOR:
-                        action = EAction.TEMP;
-                        break;
-                    case BUZZER:
-                        break;
-                }
-                ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), action);
-                connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }
-        }, 0, activeView.getUpdateInterval());
+        timer.schedule(getDefaultTimerTask(), 0, activeView.getUpdateInterval());
+    }
+
+    private TimerTask getDefaultTimerTask() {
+        if (timerTask == null) {
+            timerTask = createDefaultTimerTask();
+        }
+        return timerTask;
     }
 
     public void cancelTimer() {
@@ -633,13 +708,27 @@ public class MainActivity extends AppCompatActivity
             timer.cancel();
             timer.purge();
         }
+
+        if (timerTask != null) {
+            timerTask = null;
+        }
+
+        timerIsRunning = false;
     }
 
     public void showErrorMessage(String message) {
+        showAlertDialog(R.string.errorMsg, R.drawable.ic_error_outline_rot_24dp, message);
+    }
+
+    private void showInfoMessage(String msg) {
+        showAlertDialog(R.string.infoMsg, R.drawable.ic_info_outline_blue_24dp, msg);
+    }
+
+    private void showAlertDialog(int titleResId, int iconResId, String msg) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
-        dialogBuilder.setTitle(getString(R.string.errorMsg));
-        dialogBuilder.setIcon(R.drawable.ic_error_outline_rot_24dp);
-        dialogBuilder.setMessage(message);
+        dialogBuilder.setTitle(getString(titleResId));
+        dialogBuilder.setIcon(iconResId);
+        dialogBuilder.setMessage(msg);
         dialogBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();

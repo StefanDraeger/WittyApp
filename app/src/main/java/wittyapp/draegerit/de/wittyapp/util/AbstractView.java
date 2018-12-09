@@ -83,4 +83,5 @@ public abstract class AbstractView {
     protected String formatDateTime(long timestamp) {
         return dateFormat.format(new Date(timestamp));
     }
+
 }

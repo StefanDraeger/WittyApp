@@ -33,7 +33,8 @@
         <activity android:name=".examples.BuzzerActivity" />
         <activity android:name=".ConsoleActivity" />
         <activity android:name=".examples.RelayActivity" />
-        <activity android:name=".examples.MatrixActivity"></activity>
+        <activity android:name=".examples.MatrixActivity" />
+        <activity android:name=".HelpActivity"></activity>
     </application>
 
 </manifest>

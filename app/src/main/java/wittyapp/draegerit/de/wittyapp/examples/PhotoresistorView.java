@@ -10,6 +10,8 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -25,13 +27,15 @@ public class PhotoresistorView extends AbstractView {
 
     private int maxValue = 0;
     private int minValue = 1023;
-    private float averageValue;
+    private String averageValue;
 
     private LineChart lineChart;
     private LineDataSet dataset;
     private LineData data;
 
     private static int counter = 0;
+
+    private NumberFormat numberFormat = new DecimalFormat("00.00");
 
     public PhotoresistorView(Context ctx, View view) {
         super(ctx, view, EActiveView.PHOTORESISTOR);
@@ -84,14 +88,14 @@ public class PhotoresistorView extends AbstractView {
 
     }
 
-    private float calcAverageValue() {
+    private String calcAverageValue() {
         float averageV = 0f;
         for (Entry entry : dataset.getYVals()) {
             averageV += entry.getVal();
         }
         if (averageV > 0)
             averageV = averageV / dataset.getYVals().size();
-        return averageV;
+        return numberFormat.format(averageV);
     }
 
     private void updateLineChart(List<String> lbls) {
