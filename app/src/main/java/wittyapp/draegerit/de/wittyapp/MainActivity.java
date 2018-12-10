@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,14 +22,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.ViewFlipper;
 import android.widget.ViewSwitcher;
 
 import com.google.android.gms.ads.AdRequest;
@@ -47,19 +43,19 @@ import java.net.URLConnection;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import wittyapp.draegerit.de.wittyapp.examples.BuzzerView;
-import wittyapp.draegerit.de.wittyapp.examples.MatrixView;
-import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
-import wittyapp.draegerit.de.wittyapp.examples.RGBLedView;
-import wittyapp.draegerit.de.wittyapp.examples.RelayShieldView;
-import wittyapp.draegerit.de.wittyapp.examples.TempSensorView;
+import wittyapp.draegerit.de.wittyapp.examples.BuzzerActivity;
+import wittyapp.draegerit.de.wittyapp.examples.MatrixActivity;
+import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorActivity;
+import wittyapp.draegerit.de.wittyapp.examples.RelayActivity;
+import wittyapp.draegerit.de.wittyapp.examples.RgbLedActivity;
+import wittyapp.draegerit.de.wittyapp.examples.TemperatureSensorActivity;
 import wittyapp.draegerit.de.wittyapp.frames.OnFragmentInteractionListener;
-import wittyapp.draegerit.de.wittyapp.frames.TestFragment;
-import wittyapp.draegerit.de.wittyapp.util.AbstractView;
+import wittyapp.draegerit.de.wittyapp.frames.SettingsActivity;
 import wittyapp.draegerit.de.wittyapp.util.BuzzerValue;
 import wittyapp.draegerit.de.wittyapp.util.Configuration;
 import wittyapp.draegerit.de.wittyapp.util.EAction;
 import wittyapp.draegerit.de.wittyapp.util.EActiveView;
+import wittyapp.draegerit.de.wittyapp.util.IActionView;
 import wittyapp.draegerit.de.wittyapp.util.IPAddressValidator;
 import wittyapp.draegerit.de.wittyapp.util.PreferencesUtil;
 import wittyapp.draegerit.de.wittyapp.util.RgbColor;
@@ -77,15 +73,15 @@ public class MainActivity extends AppCompatActivity
     private ViewSwitcher viewSwitcher;
     private NavigationView navigationView;
 
-    private AbstractView activeView;
+    private EActiveView activeViewType;
+    private IActionView actionView;
+
     private Timer timer;
     private TimerTask timerTask;
 
     private boolean timerIsRunning = false;
 
     private AsyncTask activeAsyncTask;
-
-    private ViewFlipper viewFlipper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +122,8 @@ public class MainActivity extends AppCompatActivity
         TextView versionTextView = navigationView.getHeaderView(ZERO).findViewById(R.id.versionTextView);
         versionTextView.setText(getString(R.string.version_text, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
 
-        activeView = new HomeView(getApplicationContext(), viewSwitcher);
+        actionView = new HomeActivity();
+        activeViewType = EActiveView.HOME;
         setLastIpAddress(PreferencesUtil.getIpAddress(getApplicationContext()));
 
         timerTask = createDefaultTimerTask();
@@ -138,14 +135,7 @@ public class MainActivity extends AppCompatActivity
             tryToConnect(ipAdress);
         }
 
-        FrameLayout frameLayout = findViewById(R.id.frameLayout);
-        FragmentManager fm = getFragmentManager();
-        Fragment fragment = new TestFragment();
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.replace(R.id.frameLayout, fragment);
-        ft.commit();
     }
-
 
 
     private TimerTask createDefaultTimerTask() {
@@ -154,7 +144,7 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 timerIsRunning = true;
                 EAction action = null;
-                switch (activeView.getActiveViewType()) {
+                switch (activeViewType) {
                     case HOME:
                     case CONSOLE:
                     case SETTINGS:
@@ -196,20 +186,21 @@ public class MainActivity extends AppCompatActivity
         checkMItem.setVisible(false);
         saveMItem.setVisible(false);
 
-        if (activeView.getActiveViewType().equals(EActiveView.PHOTORESISTOR) || activeView.getActiveViewType().equals(EActiveView.TEMPERATUR_SENSOR)) {
+        if (activeViewType.equals(EActiveView.PHOTORESISTOR) || activeViewType.equals(EActiveView.TEMPERATUR_SENSOR)) {
             clearMItem.setVisible(true);
             //downloadMItem.setVisible(true);
             timerMItem.setVisible(true);
             timeroffMItem.setVisible(true);
-        } else if (activeView.getActiveViewType().equals(EActiveView.CONSOLE)) {
+        } else if (activeViewType.equals(EActiveView.CONSOLE)) {
             clearMItem.setVisible(true);
             refreshMItem.setVisible(true);
-        } else if (activeView.getActiveViewType().equals(EActiveView.RGB_LED) ||
-                activeView.getActiveViewType().equals(EActiveView.BUZZER)) {
+        } else if (activeViewType.equals(EActiveView.RGB_LED) ||
+                activeViewType.equals(EActiveView.RGB_LED2) ||
+                activeViewType.equals(EActiveView.BUZZER)) {
             checkMItem.setVisible(true);
-        } else if (activeView.getActiveViewType().equals(EActiveView.MATRIX)) {
+        } else if (activeViewType.equals(EActiveView.MATRIX)) {
             clearMItem.setVisible(true);
-        } else if (activeView.getActiveViewType().equals(EActiveView.SETTINGS)) {
+        } else if (activeViewType.equals(EActiveView.SETTINGS)) {
             saveMItem.setVisible(true);
         }
 
@@ -225,13 +216,13 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_clear:
-                activeView.clearData();
+                actionView.clearData();
                 break;
             case R.id.action_timer:
                 showUpdateIntervalDialog();
                 break;
             case R.id.action_refresh:
-                activeView.update();
+                actionView.update();
                 break;
             case R.id.action_timeroff:
                 cancelTimer();
@@ -248,25 +239,25 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void doSave() {
-        activeView.save();
+        actionView.save();
     }
 
 
     private void sendToDevice() {
-        if (activeView instanceof RGBLedView) {
-            RGBLedView rgbLedView = (RGBLedView) activeView;
-            int red = rgbLedView.getRedValue();
-            int green = rgbLedView.getGreenValue();
-            int blue = rgbLedView.getBlueValue();
+        if (activeViewType.equals(EActiveView.RGB_LED) || activeViewType.equals(EActiveView.RGB_LED2)) {
+            RgbLedActivity rgbLedActivity = (RgbLedActivity) actionView;
+            int red = rgbLedActivity.getRedValue();
+            int green = rgbLedActivity.getGreenValue();
+            int blue = rgbLedActivity.getBlueValue();
             PreferencesUtil.storeRgbColor(getApplicationContext(), new RgbColor(red, green, blue));
             ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.RGB_LED);
             connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } else if (activeView instanceof BuzzerView) {
-            BuzzerView buzzerView = (BuzzerView) activeView;
-            PreferencesUtil.storeBuzzerValue(getApplicationContext(), new BuzzerValue(buzzerView.getFrequenz(), buzzerView.getDuration()));
+        } else if (actionView instanceof BuzzerActivity) {
+            BuzzerActivity buzzerActivity = (BuzzerActivity) actionView;
+            PreferencesUtil.storeBuzzerValue(getApplicationContext(), new BuzzerValue(buzzerActivity.getFrequenz(), buzzerActivity.getDuration()));
             ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.BUZZER);
             connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } else if (activeView instanceof MatrixView) {
+        } else if (actionView instanceof MatrixActivity) {
             ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.MATRIX);
             connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
@@ -282,7 +273,7 @@ public class MainActivity extends AppCompatActivity
         final RadioGroup updateIntervalRadioGroup = dialogView.findViewById(R.id.updateIntervalRadioGroup);
 
         RadioButton rBtn;
-        switch (activeView.getUpdateInterval()) {
+        switch (actionView.getUpdateInterval()) {
             default:
             case 1000:
                 rBtn = dialogView.findViewById(R.id.oneSecRBtn);
@@ -329,7 +320,7 @@ public class MainActivity extends AppCompatActivity
                         break;
                 }
 
-                activeView.setUpdateInterval(updateInterval * 1000);
+                actionView.setUpdateInterval(updateInterval * 1000);
                 cancelTimer();
                 startTimer();
                 toggleStartTimerAction();
@@ -441,64 +432,68 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void loadView(EActiveView activeView) {
-        viewSwitcher.setInAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left));
-        viewSwitcher.setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right));
-
-        if (!activeView.equals(EActiveView.HOME)) {
-            switchLayout(activeView.getLayoutResId());
-        } else {
-            viewSwitcher.setDisplayedChild(activeView.getPosition());
-        }
-
-        this.setTitle(getString(activeView.getTitleResId()));
-
+        Fragment fragment = null;
         switch (activeView) {
             case HOME:
                 break;
             case PHOTORESISTOR:
-                this.activeView = new PhotoresistorView(getApplicationContext(), viewSwitcher);
+                PhotoresistorActivity activity = new PhotoresistorActivity();
+                actionView = activity;
+                fragment = activity;
+                activeViewType = EActiveView.PHOTORESISTOR;
                 break;
             case RGB_LED2:
+                fragment = new RgbLedActivity();
+                activeViewType = EActiveView.RGB_LED2;
+                break;
             case RGB_LED:
-                this.activeView = new RGBLedView(getApplicationContext(), viewSwitcher);
+                fragment = new RgbLedActivity();
+                activeViewType = EActiveView.RGB_LED;
                 break;
             case BUZZER:
-                this.activeView = new BuzzerView(getApplicationContext(), viewSwitcher);
+                fragment = new BuzzerActivity();
+                activeViewType = EActiveView.BUZZER;
                 break;
             case TEMPERATUR_SENSOR:
-                this.activeView = new TempSensorView(getApplicationContext(), viewSwitcher);
+                fragment = new TemperatureSensorActivity();
+                activeViewType = EActiveView.TEMPERATUR_SENSOR;
                 break;
             case RELAY:
-                this.activeView = new RelayShieldView(getApplicationContext(), viewSwitcher);
+                fragment = new RelayActivity();
+                activeViewType = EActiveView.RELAY;
                 break;
             case MATRIX:
-                this.activeView = new MatrixView(getApplicationContext(), viewSwitcher);
+                fragment = new MatrixActivity();
+                activeViewType = EActiveView.MATRIX;
                 break;
             case SETTINGS:
-                this.activeView = new SettingsView(getApplicationContext(), viewSwitcher);
+                fragment = new SettingsActivity();
+                activeViewType = EActiveView.SETTINGS;
                 break;
             case CONSOLE:
-                this.activeView = new ConsoleView(getApplicationContext(), viewSwitcher);
+                fragment = new ConsoleActivity();
+                activeViewType = EActiveView.CONSOLE;
                 break;
             case IMPRINT:
-                this.activeView = new ImprintView(getApplicationContext(), viewSwitcher);
+                fragment = new ImprintActivity();
+                activeViewType = EActiveView.IMPRINT;
                 break;
             case HELP:
-                this.activeView = new HelpView(getApplicationContext(), viewSwitcher);
+                fragment = new HelpActivity();
+                activeViewType = EActiveView.HELP;
                 break;
         }
 
+        this.setTitle(getString(activeViewType.getTitleResId()));
+
+        if (fragment != null) {
+            FragmentManager fm = getFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.frameLayout, fragment);
+            ft.commit();
+        }
+
         invalidateOptionsMenu();
-    }
-
-    private void switchLayout(int layoutResId) {
-        View old = viewSwitcher.getChildAt(1);
-        viewSwitcher.removeView(old);
-        LayoutInflater mInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = mInflater.inflate(layoutResId, null, true);
-
-        viewSwitcher.addView(view);
-        viewSwitcher.setDisplayedChild(1);
     }
 
     public void connect(String ipAddress) {
@@ -558,27 +553,25 @@ public class MainActivity extends AppCompatActivity
             try {
                 StringBuffer parameterBuffer = new StringBuffer();
                 String urlStr = "http://" + ipAdress;
-                if (activeView instanceof RGBLedView) {
-                    RGBLedView rgbLedView = (RGBLedView) activeView;
-                    urlStr += String.format(action.getActionSite(), rgbLedView.getRedValue(), rgbLedView.getGreenValue(), rgbLedView.getBlueValue());
-                } else if (activeView instanceof BuzzerView) {
-                    BuzzerView buzzerView = (BuzzerView) activeView;
-                    urlStr += String.format(action.getActionSite(), buzzerView.getFrequenz(), buzzerView.getDuration());
-                } else if (activeView instanceof RelayShieldView) {
-                    RelayShieldView relayShieldView = (RelayShieldView) activeView;
-                    urlStr += String.format(action.getActionSite(), relayShieldView.getState());
-                } else if (activeView instanceof TempSensorView) {
-                    TempSensorView tempSensorView = (TempSensorView) activeView;
-                    EAction action = tempSensorView.getAction();
+                if (actionView instanceof RgbLedActivity) {
+                    RgbLedActivity rgbLedActivity = (RgbLedActivity) actionView;
+                    urlStr += String.format(action.getActionSite(), rgbLedActivity.getRedValue(), rgbLedActivity.getGreenValue(), rgbLedActivity.getBlueValue());
+                } else if (actionView instanceof BuzzerActivity) {
+                    BuzzerActivity buzzerActivity = (BuzzerActivity) actionView;
+                    urlStr += String.format(action.getActionSite(), buzzerActivity.getFrequenz(), buzzerActivity.getDuration());
+                } else if (actionView instanceof RelayActivity) {
+                    RelayActivity relayActivity = (RelayActivity) actionView;
+                    urlStr += String.format(action.getActionSite(), relayActivity.getState());
+                } else if (actionView instanceof TemperatureSensorActivity) {
                     urlStr += action.getActionSite();
-                } else if (activeView instanceof MatrixView) {
-                    MatrixView matrixView = (MatrixView) activeView;
+                } else if (actionView instanceof MatrixActivity) {
+                    MatrixActivity matrixActivity = (MatrixActivity) actionView;
                     urlStr += String.format(action.getActionSite(),
-                            matrixView.getBrightness(),
-                            matrixView.getCurrentRow(),
-                            matrixView.getCurrentCol(),
-                            matrixView.getState(),
-                            matrixView.getClear()
+                            matrixActivity.getBrightness(),
+                            matrixActivity.getCurrentRow(),
+                            matrixActivity.getCurrentCol(),
+                            matrixActivity.getState(),
+                            matrixActivity.getClear()
                     );
                 } else {
                     urlStr += action.getActionSite();
@@ -622,16 +615,11 @@ public class MainActivity extends AppCompatActivity
                     handleConnectionResult(result);
                     break;
                 case PHOTORESISTOR:
-                    handlePhotoResistorResult(result);
+                case TEMP:
+                case MATRIX:
+                    handleSensorResult(result);
                     break;
                 case RGB_LED:
-                    break;
-                case TEMP:
-                    handleTempSensorResult(result);
-                    break;
-                case MATRIX:
-                    handleMatrixResult(result);
-                    break;
                 case BUZZER:
                     break;
             }
@@ -653,19 +641,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void handleMatrixResult(String result) {
-        MatrixView matrixView = (MatrixView) activeView;
-        matrixView.setClear(0);
-    }
-
-    private void handleTempSensorResult(String result) {
-        TempSensorView tempSensorView = (TempSensorView) activeView;
-        tempSensorView.addChartEntry(result);
-    }
-
-    private void handlePhotoResistorResult(String result) {
-        PhotoresistorView photoresistorView = (PhotoresistorView) activeView;
-        photoresistorView.addChartEntry(Integer.parseInt(result));
+    private void handleSensorResult(String result) {
+        actionView.addChartEntry(result);
     }
 
     private void handleConnectionResult(String result) {
@@ -736,7 +713,7 @@ public class MainActivity extends AppCompatActivity
 
     public void startTimer() {
         timer = new Timer();
-        timer.schedule(getDefaultTimerTask(), 0, activeView.getUpdateInterval());
+        timer.schedule(getDefaultTimerTask(), 0, actionView.getUpdateInterval());
     }
 
     private TimerTask getDefaultTimerTask() {

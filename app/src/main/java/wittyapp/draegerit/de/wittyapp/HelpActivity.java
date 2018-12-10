@@ -1,13 +1,64 @@
 package wittyapp.draegerit.de.wittyapp;
 
+import android.app.Fragment;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
-public class HelpActivity extends AppCompatActivity {
+import wittyapp.draegerit.de.wittyapp.frames.OnFragmentInteractionListener;
+import wittyapp.draegerit.de.wittyapp.util.IActionView;
+
+public class HelpActivity extends Fragment implements OnFragmentInteractionListener, IActionView {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_help);
+    }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_help, container, false);
+        return view;
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void save() {
+
+    }
+
+    @Override
+    public void clearData() {
+
+    }
+
+    @Override
+    public void update() {
+
+    }
+
+    @Override
+    public int getUpdateInterval() {
+        return 0;
+    }
+
+    @Override
+    public void setUpdateInterval(int intervall) {
+
+    }
+
+    @Override
+    public void addChartEntry(String entryValue) {
+
     }
 }

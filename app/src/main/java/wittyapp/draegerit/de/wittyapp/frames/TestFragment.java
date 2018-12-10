@@ -11,20 +11,9 @@ import android.view.ViewGroup;
 import wittyapp.draegerit.de.wittyapp.R;
 
 
-public class TestFragment extends Fragment implements OnFragmentInteractionListener{
+public class TestFragment extends Fragment implements OnFragmentInteractionListener {
 
     private OnFragmentInteractionListener mListener;
-
-    public TestFragment() {
-    }
-
-    public static TestFragment newInstance(String param1, String param2) {
-        TestFragment fragment = new TestFragment();
-        Bundle args = new Bundle();
-
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,13 +24,6 @@ public class TestFragment extends Fragment implements OnFragmentInteractionListe
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_test, container, false);
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -55,10 +37,6 @@ public class TestFragment extends Fragment implements OnFragmentInteractionListe
         }
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
