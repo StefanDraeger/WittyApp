@@ -437,49 +437,69 @@ public class MainActivity extends AppCompatActivity
             case HOME:
                 break;
             case PHOTORESISTOR:
-                PhotoresistorActivity activity = new PhotoresistorActivity();
-                actionView = activity;
-                fragment = activity;
+                PhotoresistorActivity photoresistorActivity = new PhotoresistorActivity();
+                actionView = photoresistorActivity;
+                fragment = photoresistorActivity;
                 activeViewType = EActiveView.PHOTORESISTOR;
                 break;
             case RGB_LED2:
-                fragment = new RgbLedActivity();
+                RgbLedActivity rgbLedActivity = new RgbLedActivity();
+                actionView = rgbLedActivity;
+                fragment = rgbLedActivity;
                 activeViewType = EActiveView.RGB_LED2;
                 break;
             case RGB_LED:
-                fragment = new RgbLedActivity();
+                RgbLedActivity rgbLed2Activity = new RgbLedActivity();
+                actionView = rgbLed2Activity;
+                fragment = rgbLed2Activity;
                 activeViewType = EActiveView.RGB_LED;
                 break;
             case BUZZER:
-                fragment = new BuzzerActivity();
+                BuzzerActivity buzzerActivity = new BuzzerActivity();
+                actionView = buzzerActivity;
+                fragment = buzzerActivity;
                 activeViewType = EActiveView.BUZZER;
                 break;
             case TEMPERATUR_SENSOR:
-                fragment = new TemperatureSensorActivity();
+                TemperatureSensorActivity temperatureSensorActivity = new TemperatureSensorActivity();
+                actionView = temperatureSensorActivity;
+                fragment = temperatureSensorActivity;
                 activeViewType = EActiveView.TEMPERATUR_SENSOR;
                 break;
             case RELAY:
-                fragment = new RelayActivity();
+                RelayActivity relayActivity = new RelayActivity();
+                actionView = relayActivity;
+                fragment = relayActivity;
                 activeViewType = EActiveView.RELAY;
                 break;
             case MATRIX:
-                fragment = new MatrixActivity();
+                MatrixActivity matrixActivity = new MatrixActivity();
+                actionView = matrixActivity;
+                fragment = matrixActivity;
                 activeViewType = EActiveView.MATRIX;
                 break;
             case SETTINGS:
-                fragment = new SettingsActivity();
+                SettingsActivity settingsActivity = new SettingsActivity();
+                actionView = settingsActivity;
+                fragment = settingsActivity;
                 activeViewType = EActiveView.SETTINGS;
                 break;
             case CONSOLE:
-                fragment = new ConsoleActivity();
+                ConsoleActivity consoleActivity = new ConsoleActivity();
+                actionView = consoleActivity;
+                fragment = consoleActivity;
                 activeViewType = EActiveView.CONSOLE;
                 break;
             case IMPRINT:
-                fragment = new ImprintActivity();
+                ImprintActivity imprintActivity = new ImprintActivity();
+                actionView = imprintActivity;
+                fragment = imprintActivity;
                 activeViewType = EActiveView.IMPRINT;
                 break;
             case HELP:
-                fragment = new HelpActivity();
+                HelpActivity helpActivity = new HelpActivity();
+                actionView = helpActivity;
+                fragment = helpActivity;
                 activeViewType = EActiveView.HELP;
                 break;
         }
