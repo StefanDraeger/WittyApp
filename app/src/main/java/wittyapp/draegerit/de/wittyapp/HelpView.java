@@ -26,4 +26,5 @@ class HelpView extends AbstractView {
     public void update() {
 
     }
+
 }

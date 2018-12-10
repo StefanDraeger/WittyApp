@@ -13,6 +13,8 @@ public final class PreferencesUtil {
     private static final String RGBCOLOR_PREF = "rgbColorPref";
     private static final String BUZZER_PREF = "buzzerPref";
 
+    private static final String CONFIG_PREF = "configPref";
+
 
     private static final String EMPTY = "";
     private static final int ZERO = 0;
@@ -60,6 +62,25 @@ public final class PreferencesUtil {
         return null;
     }
 
+    public static Configuration getConfiguration(Context ctx) {
+        SharedPreferences settings = ctx.getSharedPreferences(PREFS_NAME, ZERO);
+        String json = settings.getString(CONFIG_PREF, EMPTY);
+        if (!isBlank(json)) {
+            Gson gson = new Gson();
+            return gson.fromJson(json, Configuration.class);
+        }
+        return new Configuration();
+    }
+
+    public static void storeConfiguration(Context ctx, Configuration configuration) {
+        SharedPreferences settings = ctx.getSharedPreferences(PREFS_NAME, ZERO);
+        SharedPreferences.Editor editor = settings.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(configuration);
+        editor.putString(CONFIG_PREF, json);
+        editor.apply();
+    }
+
     public static RgbColor getRgbColor(Context ctx) {
         SharedPreferences settings = ctx.getSharedPreferences(PREFS_NAME, ZERO);
         String json = settings.getString(RGBCOLOR_PREF, getDefaultRgbColorJson());
@@ -89,6 +110,6 @@ public final class PreferencesUtil {
     }
 
     public static String getDefaultBuzzerJson() {
-        return new Gson().toJson(new BuzzerValue(31,1000));
+        return new Gson().toJson(new BuzzerValue(31, 1000));
     }
 }

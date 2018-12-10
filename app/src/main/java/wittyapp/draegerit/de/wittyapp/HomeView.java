@@ -26,4 +26,5 @@ public class HomeView extends AbstractView {
     public void update() {
 
     }
+
 }

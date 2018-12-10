@@ -26,7 +26,7 @@
         <activity android:name=".examples.PhotoresistorActivity" />
         <activity android:name=".examples.RgbLedActivity" />
         <activity android:name=".HomeActivity" />
-        <activity android:name=".SettingsActivity" />
+        <activity android:name=".SettingsActivity"/>
         <activity android:name=".ImprintActivity" />
         <activity android:name=".PrivacyPolicyActivity" />
         <activity android:name=".examples.TemperatureSensorActivity" />
@@ -34,7 +34,7 @@
         <activity android:name=".ConsoleActivity" />
         <activity android:name=".examples.RelayActivity" />
         <activity android:name=".examples.MatrixActivity" />
-        <activity android:name=".HelpActivity"></activity>
+        <activity android:name=".HelpActivity"/>
     </application>
 
 </manifest>

@@ -1,6 +1,8 @@
 package wittyapp.draegerit.de.wittyapp.util;
 
 import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 
 import java.text.DateFormat;
@@ -8,15 +10,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public abstract class AbstractView {
 
     private static final String DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm:ss,SSS";
     private static DateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
 
-    private EActiveView activeView;
+    private EActiveView activeViewType;
 
     private Context ctx;
     private View view;
@@ -30,7 +30,7 @@ public abstract class AbstractView {
 
     protected AbstractView(Context context, View view, EActiveView activeViewType) {
         this(context, view);
-        this.activeView = activeViewType;
+        this.activeViewType = activeViewType;
         initialize();
     }
 
@@ -40,12 +40,12 @@ public abstract class AbstractView {
 
     public abstract void update();
 
-    public EActiveView getActiveView() {
-        return activeView;
+    public EActiveView getActiveViewType() {
+        return activeViewType;
     }
 
-    public void setActiveView(EActiveView activeView) {
-        this.activeView = activeView;
+    public void setActiveViewType(EActiveView activeViewType) {
+        this.activeViewType = activeViewType;
     }
 
     public Context getCtx() {
@@ -70,6 +70,10 @@ public abstract class AbstractView {
 
     public void setUpdateInterval(int updateInterval) {
         this.updateInterval = updateInterval;
+    }
+
+    public void save() {
+        Log.i("ESP-App", "Not implemented!");
     }
 
     protected List<String> getLabels(int counter) {

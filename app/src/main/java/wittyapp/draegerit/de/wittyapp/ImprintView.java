@@ -28,4 +28,9 @@ class ImprintView extends AbstractView {
     public void update() {
 
     }
+
+    @Override
+    public void save() {
+
+    }
 }

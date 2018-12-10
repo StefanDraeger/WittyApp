@@ -1,5 +1,9 @@
 package wittyapp.draegerit.de.wittyapp;
 
+
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,9 +26,11 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 import android.widget.ViewSwitcher;
 
 import com.google.android.gms.ads.AdRequest;
@@ -47,8 +53,11 @@ import wittyapp.draegerit.de.wittyapp.examples.PhotoresistorView;
 import wittyapp.draegerit.de.wittyapp.examples.RGBLedView;
 import wittyapp.draegerit.de.wittyapp.examples.RelayShieldView;
 import wittyapp.draegerit.de.wittyapp.examples.TempSensorView;
+import wittyapp.draegerit.de.wittyapp.frames.OnFragmentInteractionListener;
+import wittyapp.draegerit.de.wittyapp.frames.TestFragment;
 import wittyapp.draegerit.de.wittyapp.util.AbstractView;
 import wittyapp.draegerit.de.wittyapp.util.BuzzerValue;
+import wittyapp.draegerit.de.wittyapp.util.Configuration;
 import wittyapp.draegerit.de.wittyapp.util.EAction;
 import wittyapp.draegerit.de.wittyapp.util.EActiveView;
 import wittyapp.draegerit.de.wittyapp.util.IPAddressValidator;
@@ -58,7 +67,7 @@ import wittyapp.draegerit.de.wittyapp.util.console.ConsoleEntry;
 import wittyapp.draegerit.de.wittyapp.util.console.ConsoleUtil;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, OnFragmentInteractionListener {
 
     private static final String EMPTY = "";
     private static final int ZERO = 0;
@@ -75,6 +84,8 @@ public class MainActivity extends AppCompatActivity
     private boolean timerIsRunning = false;
 
     private AsyncTask activeAsyncTask;
+
+    private ViewFlipper viewFlipper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +132,21 @@ public class MainActivity extends AppCompatActivity
         timerTask = createDefaultTimerTask();
 
         toggleESPShieldFunctions(false);
+        Configuration configuration = PreferencesUtil.getConfiguration(getApplicationContext());
+        if (configuration.isAutoConnect()) {
+            String ipAdress = PreferencesUtil.getIpAddress(getApplicationContext());
+            tryToConnect(ipAdress);
+        }
+
+        FrameLayout frameLayout = findViewById(R.id.frameLayout);
+        FragmentManager fm = getFragmentManager();
+        Fragment fragment = new TestFragment();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.replace(R.id.frameLayout, fragment);
+        ft.commit();
     }
+
+
 
     private TimerTask createDefaultTimerTask() {
         return new TimerTask() {
@@ -129,7 +154,7 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 timerIsRunning = true;
                 EAction action = null;
-                switch (activeView.getActiveView()) {
+                switch (activeView.getActiveViewType()) {
                     case HOME:
                     case CONSOLE:
                     case SETTINGS:
@@ -161,6 +186,7 @@ public class MainActivity extends AppCompatActivity
         MenuItem timeroffMItem = menu.findItem(R.id.action_timeroff);
         MenuItem refreshMItem = menu.findItem(R.id.action_refresh);
         MenuItem checkMItem = menu.findItem(R.id.action_check);
+        MenuItem saveMItem = menu.findItem(R.id.action_save);
 
         clearMItem.setVisible(false);
         downloadMItem.setVisible(false);
@@ -168,20 +194,23 @@ public class MainActivity extends AppCompatActivity
         timeroffMItem.setVisible(false);
         refreshMItem.setVisible(false);
         checkMItem.setVisible(false);
+        saveMItem.setVisible(false);
 
-        if (activeView.getActiveView().equals(EActiveView.PHOTORESISTOR) || activeView.getActiveView().equals(EActiveView.TEMPERATUR_SENSOR)) {
+        if (activeView.getActiveViewType().equals(EActiveView.PHOTORESISTOR) || activeView.getActiveViewType().equals(EActiveView.TEMPERATUR_SENSOR)) {
             clearMItem.setVisible(true);
             //downloadMItem.setVisible(true);
             timerMItem.setVisible(true);
             timeroffMItem.setVisible(true);
-        } else if (activeView.getActiveView().equals(EActiveView.CONSOLE)) {
+        } else if (activeView.getActiveViewType().equals(EActiveView.CONSOLE)) {
             clearMItem.setVisible(true);
             refreshMItem.setVisible(true);
-        } else if (activeView.getActiveView().equals(EActiveView.RGB_LED) ||
-                activeView.getActiveView().equals(EActiveView.BUZZER)) {
+        } else if (activeView.getActiveViewType().equals(EActiveView.RGB_LED) ||
+                activeView.getActiveViewType().equals(EActiveView.BUZZER)) {
             checkMItem.setVisible(true);
-        } else if (activeView.getActiveView().equals(EActiveView.MATRIX)) {
+        } else if (activeView.getActiveViewType().equals(EActiveView.MATRIX)) {
             clearMItem.setVisible(true);
+        } else if (activeView.getActiveViewType().equals(EActiveView.SETTINGS)) {
+            saveMItem.setVisible(true);
         }
 
         timerMItem.setEnabled(!timerIsRunning);
@@ -210,10 +239,18 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_check:
                 sendToDevice();
                 break;
+            case R.id.action_save:
+                doSave();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void doSave() {
+        activeView.save();
+    }
+
 
     private void sendToDevice() {
         if (activeView instanceof RGBLedView) {
@@ -438,6 +475,7 @@ public class MainActivity extends AppCompatActivity
                 this.activeView = new MatrixView(getApplicationContext(), viewSwitcher);
                 break;
             case SETTINGS:
+                this.activeView = new SettingsView(getApplicationContext(), viewSwitcher);
                 break;
             case CONSOLE:
                 this.activeView = new ConsoleView(getApplicationContext(), viewSwitcher);
@@ -495,6 +533,11 @@ public class MainActivity extends AppCompatActivity
     private void fireRelayState() {
         ConnectionAsyncTask connectionAsyncTask = new ConnectionAsyncTask(getLastIpAddress(), EAction.RELAY);
         connectionAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 
     class ConnectionAsyncTask extends AsyncTask<Void, Void, String> {
@@ -635,7 +678,7 @@ public class MainActivity extends AppCompatActivity
             } else if (result.equals("Host unreachable")) {
                 handleHostUnreachable();
             } else if (result.equals("Hello from ESP8266!")) {
-                showInfoMessage("Hello from ESP8266!");
+                showInfoMessage(result);
             }
         }
     }
@@ -714,6 +757,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         timerIsRunning = false;
+        invalidateOptionsMenu();
     }
 
     public void showErrorMessage(String message) {

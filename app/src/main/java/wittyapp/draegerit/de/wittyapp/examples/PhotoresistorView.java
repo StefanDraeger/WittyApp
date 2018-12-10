@@ -74,7 +74,7 @@ public class PhotoresistorView extends AbstractView {
     public void initialize() {
         lineChart = this.getView().findViewById(R.id.chart);
 
-        dataset = new LineDataSet(entries, "#Test");
+        dataset = new LineDataSet(entries, "#Value");
         dataset.setDrawCubic(true);
         dataset.setDrawFilled(true);
 

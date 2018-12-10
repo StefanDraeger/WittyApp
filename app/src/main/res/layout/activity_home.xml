@@ -29,4 +29,5 @@
         app:srcCompat="@drawable/wittycloudbig"
         tools:layout_editor_absoluteX="42dp"
         tools:layout_editor_absoluteY="16dp" />
+
 </LinearLayout>
